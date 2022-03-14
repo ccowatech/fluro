@@ -1,0 +1,229 @@
+{
+  "_id": "621dfa141b17ad02986c7d78",
+  "apikey_unique": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ]
+  },
+  "owners": [
+    {
+      "_id": "5eb14f76f4e2c15ffb9bf805",
+      "firstName": "Sam",
+      "lastName": "Rae",
+      "name": "Sam Rae",
+      "_type": "user"
+    }
+  ],
+  "managedOwners": [
+    {
+      "_id": "5eb14f10ff872a540dbbbe16",
+      "_type": "persona",
+      "firstName": "Sam",
+      "title": "Sam Rae",
+      "lastName": "Rae"
+    }
+  ],
+  "status": "active",
+  "hashtags": [
+
+  ],
+  "_references": [
+
+  ],
+  "mentions": [
+
+  ],
+  "keywords": [
+    "christian conventions of wa inc"
+  ],
+  "privacy": "secure",
+  "triggers": [
+
+  ],
+  "conditions": [
+
+  ],
+  "contacts": [
+
+  ],
+  "teams": [
+
+  ],
+  "integrations": [
+
+  ],
+  "items": [
+
+  ],
+  "styles": [
+
+  ],
+  "realms": [
+    {
+      "_id": "5e82a7cd281d6602b698b483",
+      "title": "Christian Conventions of WA Inc",
+      "color": "#7f12b3",
+      "bgColor": "#e7b3ff",
+      "slug": "christian-conventions-of-wa-inc",
+      "_type": "realm"
+    }
+  ],
+  "policies": [
+
+  ],
+  "developmentMode": false,
+  "tags": [
+
+  ],
+  "actions": [
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "621dfa141b17ad02986c7d79",
+      "script": "/*\n\nThis Reaction is called from other Reactions to send emails.\n\nExample body input:\n\n{\n    \"fromName\": \"Rhianon Rae\",\n    \"fromEmail\": \"rhianonrae@gmail.com\",\n    \"toEmails\": \"samrae@gmail.com\",\n    \"toContactIDs\": [\"5e97e0806a9f734dcdc940f1\"],\n    \"subect\": \"Test email\",\n    \"body\": \"<h3>Hi!</h3><p>Here is a test email</p>\"\n}\n\n*/\n\n// Check input is valid\nif(!input.fromName) return done('No from name supplied','STOP');\nif(!input.fromEmail) return done('No from email address supplied','STOP');\nif(!input.toEmails && !input.toContactIDs) return done('No contact IDs or email addresses supplied','STOP');\nif(!input.subject) return done('No email subject supplied','STOP');\nif(!input.body) return done('No email body supplied','STOP');\n\n// Supply defaults if they're not there\nif (!input.toContactIDs) input.toContactIDs = null;\nif (!input.toEmails) input.toEmails = null;\n\nreturn done(null, input);"
+    },
+    {
+      "conditions": [
+        "toContactIDs"
+      ],
+      "type": "email",
+      "_id": "621dfa141b17ad02986c7d7a",
+      "data": {
+        "keys": [
+          "toContactIDs"
+        ],
+        "contacts": [
+
+        ],
+        "teams": [
+
+        ],
+        "emailTemplate": null,
+        "senderName": "<%= get('input.fromName') %>",
+        "sender": "<%= get('input.fromEmail') %>",
+        "title": "<%= get('input.subject') %>",
+        "htmlBody": "<%- get('input.body') %>"
+      }
+    },
+    {
+      "conditions": [
+        "toEmails"
+      ],
+      "type": "emailaddress",
+      "_id": "621dfa141b17ad02986c7d7b",
+      "data": {
+        "keys": [
+          "toEmails"
+        ],
+        "emailAddresses": [
+
+        ],
+        "emailTemplate": null,
+        "senderName": "<%= get('input.fromName') %>",
+        "sender": "<%= get('input.fromEmail') %>",
+        "title": "<%= get('input.subject') %>",
+        "htmlBody": "<%- get('input.body') %>"
+      }
+    }
+  ],
+  "permissionSets": [
+    {
+      "realms": [
+        {
+          "_id": "5e82a7cd281d6602b698b483",
+          "status": "active",
+          "title": "Christian Conventions of WA Inc",
+          "color": "#7f12b3",
+          "bgColor": "#e7b3ff",
+          "created": "2020-03-31T02:15:41.877Z",
+          "updated": "2020-03-31T02:15:41.912Z",
+          "slug": "christian-conventions-of-wa-inc",
+          "_type": "realm"
+        }
+      ],
+      "roles": [
+        {
+          "_id": "57f4640c461bb7401a858f77",
+          "title": "Full Access",
+          "_type": "role",
+          "realms": [
+            "54ebd2ef3a6e88a31bb68640"
+          ],
+          "status": "active",
+          "updated": "2021-02-24T06:19:11.856Z",
+          "created": "2016-10-05T02:23:08.750Z",
+          "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system"
+        }
+      ]
+    }
+  ],
+  "title": "Utility: Send Email",
+  "tests": [
+    {
+      "_id": "621dfa141b17ad02986c7d7c",
+      "title": "Test object with email address",
+      "json": "{\n    \"fromName\": \"Fred Bloggs\",\n    \"fromEmail\": \"samrae@gmail.com\",\n    \"toEmails\": \"sam@stalbans.org.au\",\n    \"subject\": \"This is the subject\",\n    \"body\": \"<h1>Title</h1><p>This is the body</p>\"\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "621e1d59b59273001153485d",
+      "title": "Test invalid object",
+      "json": "{\n    \"fromName\": \"Fred Bloggs\",\n    \"fromEmail\": \"samrae@gmail.com\",\n    \"subject\": \"This is the subject\",\n    \"body\": \"<p>This is the body</p>\"\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "621e1d59b59273001153485e",
+      "title": "Test object with contact ID",
+      "json": "{\n    \"fromName\": \"Fred Bloggs\",\n    \"fromEmail\": \"samrae@gmail.com\",\n    \"toContactIDs\": [\"5e97e0806a9f734dcdc940f1\"],\n    \"subject\": \"This is the subject\",\n    \"body\": \"<h1>Title</h1><p>This is the body</p>\"\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "621e1d59b59273001153485f",
+      "title": "Test object with both",
+      "json": "{\n    \"fromName\": \"Fred Bloggs\",\n    \"fromEmail\": \"samrae@gmail.com\",\n    \"toEmails\": \"sam@stalbans.org.au\",\n    \"toContactIDs\": [\"5e97e0806a9f734dcdc940f1\"],\n    \"subject\": \"This is the subject\",\n    \"body\": \"<h1>Title</h1><p>This is the body</p>\"\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "6229fdbdc1d919045444cc89",
+      "title": "Another test object",
+      "json": "{\n\"fromName\": \"Rhianon Rae\",\n\"fromEmail\": \"rhianonrae@gmail.com\",\n\"toEmails\": \"samrae@gmail.com\",\n\"toContactIDs\": [\"5e97e0806a9f734dcdc940f1\"],\n\"subect\": \"Test email\",\n\"body\": \"<h3>Hi!</h3><p>Here is a test email</p>\"\n}",
+      "testEmail": "sam@stalbans.org.au"
+    }
+  ],
+  "account": {
+    "_id": "5e82a7cd281d6602b698b481",
+    "status": "active",
+    "title": "CCOWA",
+    "countryCode": "AU",
+    "timezone": "Australia/Perth"
+  },
+  "author": {
+    "_id": "5eb14f76f4e2c15ffb9bf805",
+    "firstName": "Sam",
+    "lastName": "Rae",
+    "name": "Sam Rae",
+    "_type": "user"
+  },
+  "managedAuthor": {
+    "_id": "5eb14f10ff872a540dbbbe16",
+    "_type": "persona",
+    "firstName": "Sam",
+    "title": "Sam Rae",
+    "lastName": "Rae"
+  },
+  "_type": "reaction",
+  "updatedBy": "Sam Rae",
+  "created": "2022-03-01T10:48:52.632Z",
+  "updated": "2022-03-10T13:31:41.210Z",
+  "apikey": "$2a$10$fpZijrXH5yzELANgt6/JQOQnngBYcvNBAfhyABwIRQgT/xQWBWb5K",
+  "data": {
+
+  },
+  "statDates": {
+
+  }
+}
