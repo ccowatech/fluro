@@ -1,0 +1,542 @@
+// 20220314134540
+// https://api.fluro.io/content/reaction/61f7c2afd6934a0011d8a8d0?context=edit
+
+{
+  "_id": "61f7c2afd6934a0011d8a8d0",
+  "apikey_unique": {
+    "type": "Point",
+    "coordinates": [
+      0,
+      0
+    ]
+  },
+  "owners": [
+    {
+      "_id": "5eb14f76f4e2c15ffb9bf805",
+      "firstName": "Sam",
+      "lastName": "Rae",
+      "name": "Sam Rae",
+      "_type": "user"
+    }
+  ],
+  "managedOwners": [
+    {
+      "_id": "5eb14f10ff872a540dbbbe16",
+      "_type": "persona",
+      "firstName": "Sam",
+      "title": "Sam Rae",
+      "lastName": "Rae"
+    }
+  ],
+  "status": "active",
+  "hashtags": [
+
+  ],
+  "_references": [
+
+  ],
+  "mentions": [
+
+  ],
+  "keywords": [
+    "christian conventions of wa inc"
+  ],
+  "privacy": "secure",
+  "triggers": [
+    "content.create",
+    "content.edit"
+  ],
+  "conditions": [
+    "input.item._type == 'interaction' || input.item._type == 'contactdetail'"
+  ],
+  "contacts": [
+
+  ],
+  "teams": [
+
+  ],
+  "integrations": [
+
+  ],
+  "items": [
+
+  ],
+  "styles": [
+
+  ],
+  "realms": [
+    {
+      "_id": "5e82a7cd281d6602b698b483",
+      "title": "Christian Conventions of WA Inc",
+      "color": "#7f12b3",
+      "bgColor": "#e7b3ff",
+      "slug": "christian-conventions-of-wa-inc",
+      "_type": "realm"
+    }
+  ],
+  "policies": [
+
+  ],
+  "developmentMode": false,
+  "tags": [
+
+  ],
+  "actions": [
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "61ffdaf2c4ed611bd313f8bd",
+      "script": "/*\nThis Reaction removes a Contact from previous churches\n(Groups) and adds them to their current church as defined\nby their current churchDetails detail sheet.\n\nIt sparks automatically: \n- on form submissions (Interactions)\n  When registration forms are submitted with an attached\n  detail sheet, the detail sheet is update by Fluro,\n  and then this Reaction picks up the data from the detail\n  sheet\n- on creation or editing of a churchDetails\n  details sheet\n\nIt can be sparked manually on:\n- churchDetails detail sheets\n\nInfo:\n- This doesn't actually use any information from the form submission apart from the contact IDs. All the detail sheet information is picked up from the current detail sheet as it is in Fluro.\n\n*/\n\nvar inputType;\n\n// Check what sort of input we have\nif(input.item.definition == \"churchDetails\" || input.model == \"contactdetail\") {\n    inputType = \"detailSheet\";    \n} else if(input.data._type == \"interaction\") {\n    inputType = \"interaction\";\n} else {\n    inputType = \"unknown\";\n    return done(null, 'STOP');\n}\n\ninput.inputType = inputType;\n\nreturn done(null, input);",
+      "deactivate": false
+    },
+    {
+      "conditions": [
+        "inputType == \"detailSheet\""
+      ],
+      "type": "populate",
+      "_id": "61ffdaf2c4ed611bd313f8be",
+      "data": {
+        "keys": [
+          "item"
+        ],
+        "populateSelect": [
+          "contact",
+          "definition"
+        ]
+      },
+      "deactivate": false
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "6200b11fe7912201934f214c",
+      "script": "/*\nFormat data based on what it is\n*/\n\n// Get data from input\nlet inputType = input.inputType;\nlet contacts = [];\n\nif(input.inputType == \"detailSheet\") { // Input is a detail sheet\n    contacts.push(input.item.contact);\n} else if(input.inputType == \"interaction\") { // Input is an Interaction\n    contacts = input.data.submittedData.contacts;\n}\n\n// Clear input\ninput = {};\n\n// Replace input with only the data we need\ninput.inputType = inputType;\ninput.contacts = contacts;\n\n// Finish the action and send the input to the next action\n\nreturn done(null, input);"
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "load",
+      "_id": "620a85855bbc940013e6747f",
+      "data": {
+        "keys": [
+          "contacts"
+        ],
+        "type": "contact.detail",
+        "key": "detailSheets"
+      }
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "61fa51582c74c100170a6a0c",
+      "script": "/*\nExtract data from detail sheets that we need, clear the rest\n*/\n\nvar detailSheets = input.detailSheets;\nvar contactsAndChurches = {};\n\nvar contacts = input.contacts;\n\nfor(let i = 0; i < detailSheets.length; i++) {\n    \n    if(detailSheets[i].definition == \"churchDetails\" && detailSheets[i].status == \"active\") { // Filter out all the non-churchDetails sheets inactive church detail sheets\n        \n        contactsAndChurches[detailSheets[i].contact] = {\n            \"contact\": detailSheets[i].contact,\n            \"detailSheet\": detailSheets[i]._id,\n            \"attendsChurch\": detailSheets[i].data.attendsChurch\n        }\n        \n        \n         if(detailSheets[i].data.hasOwnProperty(\"churchAttending\")) {\n             if(detailSheets[i].data.churchAttending != null) {\n                 if(detailSheets[i].data.churchAttending.hasOwnProperty(\"_id\")) {\n                     contactsAndChurches[detailSheets[i].contact].churchOnDetailSheet = detailSheets[i].data.churchAttending._id; // In case churchAttending is an object with an ID\n                 } else {\n                     contactsAndChurches[detailSheets[i].contact].churchOnDetailSheet = detailSheets[i].data.churchAttending; // In case churchAttending is a string containing the ID\n                 }\n             }\n         }\n         if(detailSheets[i].data.hasOwnProperty(\"churchNotListedName\") && detailSheets[i].data.hasOwnProperty(\"churchIsNotListed\")) {\n             if(detailSheets[i].data.churchIsNotListed == true) {\n                 contactsAndChurches[detailSheets[i].contact].churchIsNotListed = detailSheets[i].data.churchIsNotListed;\n                 contactsAndChurches[detailSheets[i].contact].churchNotListedName = detailSheets[i].data.churchNotListedName;\n             }\n         }\n    }\n}\n\n// Clear the input and put back what we want\ninput = {};\ninput.contacts = contacts;\ninput.contactsAndChurches = contactsAndChurches;\n\nreturn done(null, input);"
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "620a85855bbc940013e67481",
+      "script": "/*\nFor contacts that say their church is not listed, \nfind exact matches for churches that already exist\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results structures to return info to the next step\n//const createdNewChurch = [];\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n// Build an array of new churches and contacts to process\nlet newChurchNamesAndContacts = {};\n\n// Loop through contacts\nfor(let i=0; i<contacts.length; i++) {\n    \n    if(contactsAndChurches[contacts[i]].churchIsNotListed) { // If contact has said their church is not listed\n\n        let newChurch = {};\n        let newChurchName = contactsAndChurches[contacts[i]].churchNotListedName;\n        let contactsToAdd = [];\n        let contactToAdd = contactsAndChurches[contacts[i]].contact;\n        \n        if(!newChurchNamesAndContacts.hasOwnProperty(newChurchName)) { // If church name is not in the array already\n\n            // Add the church name and contact to the list\n            newChurch.newChurchName = newChurchName;  \n            contactsToAdd.push(contactToAdd);\n            newChurch.contacts = contactsToAdd;\n\n            newChurchNamesAndContacts[newChurchName] = newChurch;\n        \n        } else { // The church name is already in the list\n            \n            // Add the contact to the array\n            newChurchNamesAndContacts[newChurchName].contacts.push(contactToAdd);\n        }\n    }\n}\n\n// Run the async function\nreturn async.forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);\n\nfunction searchForChurch(newChurchNameAndContacts, index, next) {\n\n    let body = {\n        \n        \"filter\":\n        {\n            \"filters\": [\n            {\n                \"key\": \"title\", //The field to filter on\n                \"comparator\": \"in\", //The comparator to use\n                \"values\": [ //Multiple values to check\n                    newChurchNameAndContacts.newChurchName\n                ]\n            }]\n        }\n    };\n\n    // POST https://api.fluro.io/content/:type/filter\n    $fluro.api.post(`/content/church/filter`, body, headers)\n        .then(res => {\n            console.log(res);\n\n            if(res.data.length > 0) { // If any data is returned\n\n                // Add the matched church to the contacts\n                for(let i=0; i<newChurchNameAndContacts.contacts.length; i++) {\n                    contactsAndChurches[newChurchNameAndContacts.contacts[i]].exactMatchChurch = res.data[0]._id;\n                }\n                \n                // Remove the matched church from the list of new churchOnDetailSheet\n                delete newChurchNamesAndContacts[res.data[0].title];\n                delete newChurchNamesAndContacts[_.startCase(res.data[0].title)]; // Also try removing the church if it's just a difference of capital letter\n            }\n\n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction searchForChurchCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n    //input.newChurchNamesAndContacts = newChurchNamesAndContacts;\n    return done(null, input);\n}",
+      "deactivate": false
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "620a85855bbc940013e67482",
+      "script": "/*\nIf there's an exact match, update the detail sheet to point to the matched church\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results structures to return info to the next step\n//const createdNewChurch = [];\nconst updatedDetailSheets = [];\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n\n// Build an array of detail sheets to update\nlet detailSheetsToUpdate = [];\n\n// Loop through contacts\nfor(let i=0; i<contacts.length; i++) {\n    \n    if(contactsAndChurches[contacts[i]].hasOwnProperty('exactMatchChurch')) { // If we've just found the church for the contact\n\n        // Add the contact, detail sheet, and church to an array to process\n        detailSheetsToUpdate.push({\n            \"contact\": contacts[i],\n            \"detailSheet\": contactsAndChurches[contacts[i]].detailSheet,\n            \"exactMatchChurch\": contactsAndChurches[contacts[i]].exactMatchChurch\n        });\n    }\n}\n\n// Run the async function\nreturn async.forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);\n\nfunction updateDetailSheet(detailSheetToUpdate, index, next) {\n\n    let body = {\n        \"data\": {\n            \"churchIsNotListed\":false,\n            \"churchAttending\": {\n                \"_id\": detailSheetToUpdate.exactMatchChurch\n            },\n            \"churchAttendingText\": detailSheet\n        }\n    };\n\n    // PUT https://api.fluro.io/content/:type/:id\n    $fluro.api.put(\"/content/churchDetails/\"+detailSheetToUpdate.detailSheet, body, headers)\n        .then(res => {\n            console.log(res);\n\n            if(res.data.length > 0) { // If any data is returned\n\n                updatedDetailSheets.push(res.data[0]);\n            }\n\n            contactsAndChurches[detailSheetToUpdate.contact].churchOnDetailSheet = detailSheetToUpdate.exactMatchChurch;\n\n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction updateDetailSheetCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n    //input.updatedDetailSheets = updatedDetailSheets;\n    //input.detailSheetsToUpdate = detailSheetsToUpdate;\n    \n\n\treturn done(null, input);\n}"
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "6224a0c4e1c32a0012bc2b24",
+      "script": "/*\nRetrieve titles for the churches on the detail sheets\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results structures to return info to the next step\n\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n// Build an array of contacts and churches to look up\nlet contactsAndChurchesToLookUp = [];\n\n// Loop through contacts\nfor(let i=0; i<contacts.length; i++) {\n    \n    if(contactsAndChurches[contacts[i]].hasOwnProperty('churchOnDetailSheet')) { // If there's a church reference on the detail sheet\n\n        // Add the contact and church ID to an array to process\n        contactsAndChurchesToLookUp.push({\n            \"contact\": contacts[i],\n            \"church\": contactsAndChurches[contacts[i]].churchOnDetailSheet\n        });\n    }\n}\n\n\n// Run the async functions\nreturn async.forEachOfSeries(contactsAndChurchesToLookUp, lookUpChurchTitle, lookUpChurchTitleCallback);\n\nfunction lookUpChurchTitle(contactAndChurch, index, next) {\n\n    // GET https://api.fluro.io/content/get/:id\n    $fluro.api.get(\"/content/get/\"+contactAndChurch.church)\n        .then(res => {\n            console.log(res);\n\n            contactsAndChurches[contactAndChurch.contact].churchOnDetailSheetTitle = res.data.title;\n            \n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction lookUpChurchTitleCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n    input.contactsAndChurches = contactsAndChurches;\n\n\treturn done(null, input);\n}",
+      "deactivate": false
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "6224a0c4e1c32a0012bc2b25",
+      "script": "/*\nUpdate detail sheets to include a plain text church title\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results structures to return info to the next step\nconst updatedDetailSheets = [];\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n\n// Build an array of detail sheets to update\nlet detailSheetsToUpdate = [];\n\n// Loop through contacts\nfor(let i=0; i<contacts.length; i++) {\n    \n    if(contactsAndChurches[contacts[i]].hasOwnProperty('churchOnDetailSheetTitle')) { // If the church title has been retrieved\n\n        // Add the detail sheet, and church to an array to process\n        detailSheetsToUpdate.push({\n            \"detailSheet\": contactsAndChurches[contacts[i]].detailSheet,\n            \"church\": contactsAndChurches[contacts[i]].churchOnDetailSheetTitle\n        });\n    }\n}\n\n// Run the async function\nreturn async.forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);\n\nfunction updateDetailSheet(detailSheetToUpdate, index, next) {\n\n    let body = {\n        \"data\": {\n            \"churchAttendingTitle\": detailSheetToUpdate.church\n        }\n    };\n\n    // PUT https://api.fluro.io/content/:type/:id\n    $fluro.api.put(\"/content/churchDetails/\"+detailSheetToUpdate.detailSheet, body, headers)\n        .then(res => {\n            console.log(res);\n\n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction updateDetailSheetCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n    \n\n\treturn done(null, input);\n}"
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "620a85855bbc940013e67483",
+      "script": "/*\nFor contacts that say their church is not listed, \nand an exact match was not found,\nfind fuzzy matches for churches that already exist\n*/\n\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results structures to return info to the next step\n//const createdNewChurch = [];\nvar newChurchesHaveBeenSubmitted = false;\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n// Build an array of new churches and contacts to process\nlet newChurchNamesAndContacts = {};\n\n// Loop through contacts\nfor(let i=0; i<contacts.length; i++) {\n    \n    if(contactsAndChurches[contacts[i]].churchIsNotListed // If contact has said their church is not listed …\n        && !contactsAndChurches[contacts[i]].hasOwnProperty(\"exactMatchChurch\") // AND an exact match has not been found\n        && contactsAndChurches[contacts[i]].churchNotListedName != \"\") {  // AND the unlisted church name is not blank\n\n        newChurchesHaveBeenSubmitted = true;\n\n        let newChurch = {};\n        let newChurchName = contactsAndChurches[contacts[i]].churchNotListedName;\n        let contactsToAdd = [];\n        let contactToAdd = contactsAndChurches[contacts[i]].contact;\n        \n        if(!newChurchNamesAndContacts.hasOwnProperty(newChurchName)) { // If church name is not in the array already\n\n            // Add the church name and contact to the list\n            newChurch.newChurchName = newChurchName;  \n            contactsToAdd.push(contactToAdd);\n            newChurch.contacts = contactsToAdd;\n\n            newChurchNamesAndContacts[newChurchName] = newChurch;\n        \n        } else { // The church name is already in the list\n            \n            // Add the contact to the array\n            newChurchNamesAndContacts[newChurchName].contacts.push(contactToAdd);\n        }\n    }\n}\n\n// Run the async function\nreturn async.forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);\n\nfunction searchForChurch(newChurchNameAndContacts, index, next) {\n\n    let body = {\n        \"search\":newChurchNameAndContacts.newChurchName // Fuzzy search for church name\n    };\n\n    // POST https://api.fluro.io/content/:type/filter\n    $fluro.api.post(`/content/church/filter`, body, headers)\n        .then(res => {\n            console.log(res);\n\n            if(res.data.length > 0) { // If any data is returned\n\n                // Add the fuzzy matched churches to the contacts\n                for(let i=0; i<newChurchNameAndContacts.contacts.length; i++) {\n                    contactsAndChurches[newChurchNameAndContacts.contacts[i]].fuzzyMatchedChurches = res.data;\n                }\n            }\n\n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction searchForChurchCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n    //input.newChurchNamesAndContacts = newChurchNamesAndContacts;\n    input.newChurchesHaveBeenSubmitted = newChurchesHaveBeenSubmitted;\n    return done(null, input);\n}"
+    },
+    {
+      "conditions": [
+        "newChurchesHaveBeenSubmitted"
+      ],
+      "type": "email",
+      "_id": "620a85855bbc940013e67484",
+      "data": {
+        "keys": [
+
+        ],
+        "contacts": [
+          {
+            "_id": "5e97e0806a9f734dcdc940f1",
+            "owners": [
+
+            ],
+            "managedOwners": [
+
+            ],
+            "realms": [
+              "5e82a7cd281d6602b698b484",
+              "6088c1cb87f82418764b7114",
+              "5e97abd48beea3051136186f",
+              "5e82a7cd281d6602b698b482",
+              "5e82a7cd281d6602b698b486",
+              "5e82a7ce281d6602b698b488",
+              "5e82a7cd281d6602b698b485",
+              "5e82a7ce281d6602b698b489",
+              "5e82a7cd281d6602b698b483",
+              "608a565b6eb42c090022c3fd",
+              "608a56b56eb42c090022d259",
+              "608a570bd9e05730879ce9c2",
+              "61f546264d66c70018d73006",
+              "606ecb8ec9c89661558d0bc1",
+              "6215e2e8d7cc7c001956c492",
+              "5e9d1bf79b953262c33e187f"
+            ],
+            "tags": [
+
+            ],
+            "_type": "contact",
+            "data": {
+              "futureContact": "N",
+              "import": {
+                "Name for sorting": "Rae, Samuel",
+                "Surname": "Rae",
+                "First name": "Samuel",
+                "Nametag": "Sam Rae",
+                "Category": "0",
+                "Future contact": "N",
+                "Pending": "1",
+                "Share?": "n",
+                "Email": "samrae@gmail.com",
+                "Email status": "0",
+                "Wrong": "0",
+                "Year of birth": "0",
+                "Last update when": "16/07/15 17:55",
+                "Last update who": "Teamlist web user",
+                "Record #": "158980",
+                "Member of": "pmc2015",
+                "index": 9945,
+                "Sex": "M",
+                "Church denom name": "Baptist",
+                "Church name": "Atwell Community Church",
+                "Phone(m)": "043976319",
+                "Street": "10 Radiance Link",
+                "Suburb": "Atwell",
+                "State": "WA",
+                "Postcode": "6164",
+                "DOB": "19/05/1982",
+                "Info": "St Matthew's Uni Church",
+                "Prefname": "Sam"
+              }
+            },
+            "account": "5e82a7cd281d6602b698b481",
+            "title": "Sam Rae"
+          },
+          {
+            "_id": "5e97d9ca6a9f734dcdc920e1",
+            "owners": [
+
+            ],
+            "managedOwners": [
+
+            ],
+            "realms": [
+              "5e97abd48beea3051136186f",
+              "5e82a7cd281d6602b698b482",
+              "5e82a7cd281d6602b698b486",
+              "5e82a7ce281d6602b698b488",
+              "606ecb8ec9c89661558d0bc1",
+              "608a570bd9e05730879ce9c2",
+              "6088c1cb87f82418764b7114",
+              "5e82a7ce281d6602b698b489",
+              "5e9d1c929b953262c33e24da"
+            ],
+            "tags": [
+
+            ],
+            "_type": "contact",
+            "data": {
+              "futureContact": "Y",
+              "import": {
+                "Name for sorting": "Metcalf, Chris",
+                "Surname": "Metcalf",
+                "First name": "Chris",
+                "Nametag": "Chris Metcalf",
+                "Sex": "M",
+                "Category": "0",
+                "Church denom name": "Baptist",
+                "Church name": "North Beach Baptist Church",
+                "Future contact": "Y",
+                "Pending": "1",
+                "Share?": "n",
+                "Phone(m)": "410895019",
+                "Email": "chris.metcalf8@gmail.com",
+                "Email status": "0",
+                "Info": "catering helper",
+                "Street": "12 Groat St",
+                "Suburb": "North Beach",
+                "State": "WA",
+                "Postcode": "6020",
+                "Wrong": "0",
+                "DOB": "17/04/1989",
+                "Year of birth": "0",
+                "Last update when": "03/10/16 08:43",
+                "Last update who": "Matt Harding",
+                "Record #": "201576",
+                "Member of": "exalt2016bc exalt2016th exalt2016",
+                "index": 8143,
+                "Prefname": "Chris"
+              }
+            },
+            "account": "5e82a7cd281d6602b698b481",
+            "title": "Chris Metcalf"
+          }
+        ],
+        "teams": [
+
+        ],
+        "emailTemplate": null,
+        "title": "Church not listed",
+        "htmlBody": "<!-- Loop through each item in the array -->\n\n<h3>The following detail sheets have been updated with a church that does not exist in our list.</h3>\n\n<% \n\nlet contacts = get('input.contacts');\nlet contactsAndChurches = get('input.contactsAndChurches');\n\nfor(let i = 0; i < contacts.length; i++) {\n    if(contactsAndChurches[contacts[i]].churchIsNotListed\n    && contactsAndChurches[contacts[i]].churchNotListedName != \"\") { \n        let churchNotListedName = contactsAndChurches[contacts[i]].churchNotListedName;\n        let detailSheet = contactsAndChurches[contacts[i]].detailSheet;\n    \n    %>  <hr/>\n        <h4>Detail Sheet: <code><a href=\"https://app.fluro.io/list/contactdetail/churchDetails/<%= detailSheet %>/edit\"><%=detailSheet%></a></code></h4>\n        <h4>Church name: <code><%= churchNotListedName %></code></h4>\n        <%\n        if(contactsAndChurches[contacts[i]].hasOwnProperty(\"fuzzyMatchedChurches\")) { \n\n            let churchNotListedName = contactsAndChurches[contacts[i]].churchNotListedName;\n            %>\n\n            <p>Here are some existing churches with similar names:</p>\n            <ul>\n\n                <%\n                let fuzzyMatchedChurches = contactsAndChurches[contacts[i]].fuzzyMatchedChurches;\n            \n                for(let j=0; j < fuzzyMatchedChurches.length; j++) {%>\n                    <li><%= fuzzyMatchedChurches[j].title %></li>    \n                <% \n                } %>\n            </ul>\n            <%\n        }\n    }\n}\n\n%>\n<hr/>\n<p>Please manually check the detail sheets and either select the correct church, or create a new church and select it. New churches will need to be added to live forms as available churches to choose from.</p>"
+      },
+      "deactivate": false
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "620a85855bbc940013e67485",
+      "script": "/*\nCreate new churches if necessary\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results structures to return info to the next step\n//const createdNewChurch = [];\n//const foundChurches = [];\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n// Build an array of new churches and contacts to process\nlet newChurchNamesAndContacts = {};\n\n// Loop through contacts\nfor(let i=0; i<contacts.length; i++) {\n    \n    if(contactsAndChurches[contacts[i]].hasOwnProperty('churchNotListedName')) { // If contact has said their church is not listed\n\n        let newChurch = {};\n        let newChurchName = contactsAndChurches[contacts[i]].churchNotListedName;\n        let contactsToAdd = [];\n        let contactToAdd = contactsAndChurches[contacts[i]].contact;\n        \n        if(!newChurchNamesAndContacts.hasOwnProperty(newChurchName)) { // If church name is not in the array already\n\n            // Add the church name and contact to the list\n            newChurch.newChurchName = newChurchName;  \n            contactsToAdd.push(contactToAdd);\n            newChurch.contacts = contactsToAdd;\n\n            newChurchNamesAndContacts[newChurchName] = newChurch;\n        \n        } else { // The church name is already in the list\n            \n            // Add the contact to the array\n            newChurchNamesAndContacts[newChurchName].contacts.push(contactToAdd);\n        }\n    }\n}\n\ninput.newChurchNamesAndContacts = newChurchNamesAndContacts;\n\n// Run the async function\nreturn async.forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);\n\n//return async.forEachOfSeries(newChurchNamesToCreate, createChurch, createChurchCallback);\n\nfunction searchForChurch(newChurchNameAndContacts, index, next) {\n\n    let body = {\n        \n        \"filter\":\n        {\n            \"filters\": [\n            {\n                \"key\": \"title\", //The field to filter on\n                \"comparator\": \"in\", //The comparator to use\n                \"values\": [ //Multiple values to check\n                    newChurchNameAndContacts.newChurchName\n                ]\n            }]\n        }\n    };\n\n    // POST https://api.fluro.io/content/:type/filter\n    $fluro.api.post(`/content/church/filter`, body, headers)\n        .then(res => {\n            console.log(res);\n\n            if(res.data.length > 0) { // If any data is returned\n                for(let i=0; i<newChurchNameAndContacts.contacts.length; i++) {\n                    contactsAndChurches[newChurchNameAndContacts.contacts[i]].foundChurch = res.data[0]._id;\n                }\n                \n                /*foundChurches.push({\n                    \"foundChurchName\": res.data[0].title,\n                    \"foundChurch\": res.data[0]._id,\n                    \"contacts\": newChurchNameAndContacts.contacts\n                });*/\n            }\n\n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction searchForChurchCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n    //input.foundChurches = foundChurches;\n\n\treturn done(null, input);\n}\n\n\n// Function to execute on each contact\nfunction createChurch(newChurchName, index, next) {\n\n    let body = {\n\n        //\"definition\": \"church\",\n        \"title\": newChurchName,\n        \"realms\": [\"61f546264d66c70018d73006\"]\n    };\n\n    // https://api.fluro.io/content/:type\n    $fluro.api.post(`/content/church`, body, headers)\n        .then(res => {\n            console.log(res);\n\n            createdNewChurch.push(Object.keys(res));/*newChurchName*/\n            \n            \n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction createChurchCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n    input.newChurchNamesToCreate = newChurchNamesToCreate;\n\tinput.createdNewChurch = createdNewChurch;\n\treturn done(null, input);\n}",
+      "deactivate": true
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "61fa51582c74c100170a6a0d",
+      "data": {
+        "query": {
+          "_id": "61fa18a9012272001097eb59",
+          "owners": [
+            "5eb14f76f4e2c15ffb9bf805"
+          ],
+          "managedOwners": [
+            "5eb14f10ff872a540dbbbe16"
+          ],
+          "realms": [
+            "5e82a7cd281d6602b698b483"
+          ],
+          "tags": [
+
+          ],
+          "title": "Get churches that contact is in",
+          "account": "5e82a7cd281d6602b698b481",
+          "author": "5eb14f76f4e2c15ffb9bf805",
+          "managedAuthor": "5eb14f10ff872a540dbbbe16",
+          "_type": "query",
+          "data": {
+
+          }
+        },
+        "key": "contactGroups"
+      },
+      "script": "/*\nLoad the churches that each contact is in\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n// Run the async function\nreturn async.forEachOfSeries(contactsAndChurches, listGroups, listGroupsCallback);\n\n// Function to execute on each contact\nfunction listGroups(contactAndChurches, index, next) {\n\n    var body = {\n        \"_type\": \"team\",\n        \"status\": \"active\",\n        \"definition\": \"church\",\n        \"provisionalMembers\": contactAndChurches.contact\n    };\n\n    // https://api.fluro.io/content/_query\n    $fluro.api.post(`/content/_query/?select=title _id`, body, headers)\n        .then(res => {\n            console.log(res);\n\n            let churches = [];\n\n            // Construct an array of churches\n            for(let i = 0; i < res.data.length; i++) {\n                    churches.push(res.data[i][\"_id\"]); \n            }\n\n            contactsAndChurches[contactAndChurches.contact].churches = churches;\n            \n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction listGroupsCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n    // Clear the input\n    input = {};\n    \n\t// Return results\n    input.contacts = contacts;\n    input.contactsAndChurches = contactsAndChurches;\n\treturn done(null, input);\n}",
+      "deactivate": false
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "61f94fd22c74c100170a48df",
+      "deactivate": false,
+      "script": "/*\nRemove contacts from churches that they're no longer in\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up results structures to return info to the next step\nconst result = {};\nconst removedContactFromChurch = [];\n\n// Get input data needed\nlet contacts = _.get(input, 'contacts');\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\n\n// Make an array of contact/church combinations to process\nlet contactAndChurchCombosToRemove = [];\n\n// Loop through contacts\nfor(let i=0; i<contacts.length; i++) {\n\n    // Loop through churches to remove for each contact\n    for(let j=0; j<contactsAndChurches[contacts[i]].churches.length; j++) {\n\n        if((contactsAndChurches[contacts[i]].churches[j] != contactsAndChurches[contacts[i]].churchOnDetailSheet) // IF church is not the church on the detail sheet\n            || contactsAndChurches[contacts[i]].churchIsNotListed // OR Person has said their church is not listed\n            || contactsAndChurches[contacts[i]].attendsChurch == \"no\") { // OR Person has said they don't attend church at all\n\n            // Add the contact and church to the list to remove\n            contactAndChurchCombosToRemove.push({\n                contact: contacts[i],\n                church: contactsAndChurches[contacts[i]].churches[j]\n            });\n        }\n    }\n}\n\n// Run the async function\nreturn async.forEachOfSeries(contactAndChurchCombosToRemove, leaveGroup, leaveGroupCallback);\n\n// Function to execute on each contact\nfunction leaveGroup(contactAndChurchCombo, index, next) {\n\n    // https://api.fluro.io/teams/:teamID/leave/:contactID\n    $fluro.api.delete(`/teams/${contactAndChurchCombo.church}/leave/${contactAndChurchCombo.contact}`)\n        .then(res => {\n            console.log(res);\n            \n            removedContactFromChurch.push(contactAndChurchCombo);\n            \n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction leaveGroupCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n\tresult.removedContactFromChurch = removedContactFromChurch;\n\tinput.result = result;\n\treturn done(null, input);\n}"
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "code",
+      "_id": "61ffa6a5b6d813001556c712",
+      "script": "/*\nAdd contacts to their current church (current church as determined from the Detail Sheet)\n*/\n\n//Load packages\nvar _ = require('lodash');\nvar async = require('async');\n\n// Set up headers\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results structures to return info to the next step\nconst addedContactToChurch = [];\n\n// Get input data needed\nlet contactsAndChurches = _.get(input, 'contactsAndChurches');\nlet contacts = _.get(input, 'contacts');\n\n// Build an array of contacts and churchces to loop through\nlet contactsAndChurchToAdd = [];\n\nfor(let i=0; i<contacts.length; i++) { // Loop through contacts\n\n    // If the church on the detail sheet not null, and is not in the church array, add it to the array of churches to add to contats\n    if(!contactsAndChurches[contacts[i]].churches.includes(contactsAndChurches[contacts[i]].churchOnDetailSheet) && contactsAndChurches[contacts[i]].churchOnDetailSheet !== null) {\n        contactsAndChurchToAdd.push({\n            \"contact\": contactsAndChurches[contacts[i]].contact,\n            \"church\": contactsAndChurches[contacts[i]].churchOnDetailSheet\n        });\n    }\n}\n\n// Run the async function\nreturn async.forEachOfSeries(contactsAndChurchToAdd, joinGroup, joinGroupCallback);\n\n// Function to execute on each contact\nfunction joinGroup(contactAndChurchToAdd, index, next) {\n\n    // Make the body of the request the contact ID\n    let body = { \n        \"_id\": contactAndChurchToAdd.contact\n    };\n\n     // https://api.fluro.io/teams/:teamID/join\n     $fluro.api.post(`/teams/${contactAndChurchToAdd.church}/join`, body, headers)\n        .then(res => {\n            console.log(res);\n            \n            addedContactToChurch.push({\n                \"contact\": contactAndChurchToAdd.contact,\n                \"church\": contactAndChurchToAdd.church\n            });\n            \n            next();\n        })\n        .catch(err => next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction joinGroupCallback(err) {\n    if (err) {\n        var errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, \"STOP\");\n    }\n\n\t// Return results\n\tinput.addedContactToChurch = addedContactToChurch;\n\treturn done(null, input);\n}",
+      "deactivate": false
+    },
+    {
+      "conditions": [
+
+      ],
+      "type": "stop",
+      "_id": "61f7d7535b9b1d0011e9750b",
+      "deactivate": false
+    }
+  ],
+  "permissionSets": [
+    {
+      "realms": [
+        {
+          "_id": "5e82a7cd281d6602b698b483",
+          "status": "active",
+          "title": "Christian Conventions of WA Inc",
+          "color": "#7f12b3",
+          "bgColor": "#e7b3ff",
+          "created": "2020-03-31T02:15:41.877Z",
+          "updated": "2020-03-31T02:15:41.912Z",
+          "slug": "christian-conventions-of-wa-inc",
+          "_type": "realm"
+        }
+      ],
+      "roles": [
+        {
+          "_id": "57f4640c461bb7401a858f77",
+          "title": "Full Access",
+          "_type": "role",
+          "realms": [
+            "54ebd2ef3a6e88a31bb68640"
+          ],
+          "status": "active",
+          "updated": "2021-02-24T06:19:11.856Z",
+          "created": "2016-10-05T02:23:08.750Z",
+          "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system"
+        }
+      ]
+    }
+  ],
+  "title": "Update Contact's church from Detail Sheet",
+  "deactivated": false,
+  "account": {
+    "_id": "5e82a7cd281d6602b698b481",
+    "status": "active",
+    "title": "CCOWA",
+    "countryCode": "AU",
+    "timezone": "Australia/Perth"
+  },
+  "author": {
+    "_id": "5eb14f76f4e2c15ffb9bf805",
+    "firstName": "Sam",
+    "lastName": "Rae",
+    "name": "Sam Rae",
+    "_type": "user"
+  },
+  "managedAuthor": {
+    "_id": "5eb14f10ff872a540dbbbe16",
+    "_type": "persona",
+    "firstName": "Sam",
+    "title": "Sam Rae",
+    "lastName": "Rae"
+  },
+  "_type": "reaction",
+  "updatedBy": "Sam Rae",
+  "created": "2022-01-31T11:06:23.988Z",
+  "updated": "2022-03-07T01:27:57.584Z",
+  "tests": [
+    {
+      "_id": "61f7c66d5b9b1d0011e97304",
+      "title": "CREDO 2022 Registration (Chris Metcalf)",
+      "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"credo2022\",\n    \"submittedData\": {\n      \"title\": \"CREDO 2022\",\n      \"data\": {\n        \"contact\": [\n          \"5e97d9ca6a9f734dcdc920e1\"\n        ],\n        \"_paymentGateway\": \"61f5553f7f6b4301bf713a61\",\n        \"invoicenumber\": \"Metc-0435\",\n        \"donationAmount\": 100,\n        \"iamover18\": true,\n        \"discountcode\": \"regoisfree2022\"\n      },\n      \"realms\": [\n        \"5e82a7ce281d6602b698b488\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"attendsChurch\": \"yes\",\n                  \"churchAttending\": {\n                    \"_id\": \"5e9d1c909b953262c33e24ba\",\n                    \"status\": \"active\",\n                    \"realms\": [\n                      \"5e9d1c929b953262c33e24da\",\n                      \"5e82a7cd281d6602b698b483\"\n                    ],\n                    \"title\": \"Mundaring Church of Christ\",\n                    \"_type\": \"team\",\n                    \"created\": \"2020-04-20T03:52:48.167Z\",\n                    \"updated\": \"2020-11-16T06:43:05.690Z\",\n                    \"slug\": \"mundaring-church-of-christ-hpionqu2e\",\n                    \"definition\": \"church\",\n                    \"value\": \"5e9d1c909b953262c33e24ba\"\n                  }\n                }\n              }\n            },\n            \"dietaryRequirements\": [],\n            \"firstName\": \"Chris\",\n            \"lastName\": \"Metcalf\",\n            \"gender\": \"male\",\n            \"dob\": \"1989-04-17T00:00:00.000Z\",\n            \"email\": \"Chris.Metcalf.email@gmail.com\",\n            \"phoneNumber\": \"0410895019\",\n            \"registrationtype\": \"standard\",\n            \"mealPreference\": \"Butter chicken\",\n            \"elective\": \"Banksy, Spacey Jane, Fremantle, and Christians\",\n            \"elective2\": \"Banksy, Spacey Jane, Fremantle, and Christians\"\n          }\n        ],\n        \"_paymentGateway\": \"61f5553f7f6b4301bf713a61\",\n        \"invoicenumber\": \"Metc-0435\",\n        \"donationAmount\": 100,\n        \"iamover18\": true,\n        \"discountcode\": \"regoisfree2022\"\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"144.138.71.224\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Saturday Only Registration\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        },\n        {\n          \"title\": \"Standard registrations\",\n          \"operation\": \"add\",\n          \"value\": 8000,\n          \"total\": 8000\n        },\n        {\n          \"title\": \"Free registration\",\n          \"operation\": \"set\",\n          \"value\": 0,\n          \"total\": 0\n        },\n        {\n          \"title\": \"EarlyBird\",\n          \"operation\": \"subtract\",\n          \"value\": 500,\n          \"total\": -500\n        }\n      ],\n      \"primaryEmail\": \"chris.metcalf.email@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"5e97d9ca6a9f734dcdc920e1\"\n      ],\n      \"agreements\": {\n        \"iamover18\": \"1. Age Restriction: To attend this event, you must be 18 years or older.\\n2. Sponsor Scheme: A contribution to this scheme helps to cover the cost of registration to our conferences for those otherwise unable to attend. If you wish to apply for a subsidy, please contact the registrar at credoperth@gmail.com. \\n3. Refund Policy: No refund is available for delegates who cancel after the registration closing date.\\n4. The earlybird discount is only available until 11:59pm 14th March 2022.\\n5. Walk-ins on Friday and Saturday night will be available at $10pp subject to availability.\\n6. Please be aware that government regulations are fluid and we will inform you if any restrictions affect CREDO 2022\"\n      },\n      \"attemptLog\": \"61f68073642d62021183e371\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"credo2022\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f68076642d62021183e392\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7ce281d6602b698b488\"\n    ],\n    \"title\": \"CREDO 2022\",\n    \"_type\": \"interaction\",\n    \"definition\": \"credo2022\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "61fa51582c74c100170a6a11",
+      "title": "Test form (2 contacts)",
+      "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\",\n    \"submittedData\": {\n      \"title\": \"Test live Square integration\",\n      \"data\": {\n        \"contact\": [\n          \"5e97e0806a9f734dcdc940f1\",\n          \"619ca4884de7ec000f03a8af\"\n        ],\n        \"_paymentGateway\": \"61f555d2a0158d01e7c9fa28\",\n        \"cost\": \"0\"\n      },\n      \"realms\": [\n        \"61f546264d66c70018d73006\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"firstName\": \"Sam\",\n            \"lastName\": \"Rae\",\n            \"email\": \"samrae@gmail.com\"\n          },\n          {\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"email\": \"samrae+test@gmail.com\"\n          }\n        ],\n        \"_paymentGateway\": \"61f555d2a0158d01e7c9fa28\",\n        \"cost\": \"0\"\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Registration\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        }\n      ],\n      \"primaryEmail\": \"samrae@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"5e97e0806a9f734dcdc940f1\",\n        \"619ca4884de7ec000f03a8af\"\n      ],\n      \"attemptLog\": \"61fa16defbe34d0344ab855e\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"testLiveSquarePayment\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61fa16dffbe34d0344ab856d\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"61f546264d66c70018d73006\"\n    ],\n    \"title\": \"Test live Square integration\",\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "61ffdaf2c4ed611bd313f8cb",
+      "title": "Church Details edit",
+      "json": "{\n  \"trigger\": \"content.edit\",\n  \"data\": {\n    \"diff\": {\n      \"_references\": {\n        \"0\": [\n          \"617fd3585efd500c44d9ce60\"\n        ],\n        \"_t\": \"a\",\n        \"_0\": [\n          \"6183a592ff54a70c8879706c\",\n          0,\n          0\n        ]\n      },\n      \"data\": {\n        \"churchAttending\": [\n          \"6183a592ff54a70c8879706c\",\n          \"617fd3585efd500c44d9ce60\"\n        ]\n      }\n    }\n  },\n  \"item\": {\n    \"_id\": \"619ca4f325441b00101f290b\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"619376c2ac6eda000f1d32cb\"\n    ],\n    \"definition\": \"churchDetails\",\n    \"_type\": \"contactdetail\",\n    \"title\": \"Test Person - Church Details\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "6200b11fe7912201934f2156",
+      "title": "Update Details sheet — No church selected",
+      "json": "{\n  \"trigger\": \"content.edit\",\n  \"data\": {\n    \"diff\": {\n      \"_references\": {\n        \"_t\": \"a\",\n        \"_0\": [\n          \"6183a592ff54a70c8879706c\",\n          0,\n          0\n        ]\n      },\n      \"data\": {\n        \"churchAttending\": [\n          \"6183a592ff54a70c8879706c\",\n          0,\n          0\n        ]\n      }\n    }\n  },\n  \"item\": {\n    \"_id\": \"619ca4f325441b00101f290b\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"619376c2ac6eda000f1d32cb\"\n    ],\n    \"definition\": \"churchDetails\",\n    \"_type\": \"contactdetail\",\n    \"title\": \"Test Person - Church Details\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "6200b11fe7912201934f2157",
+      "title": "Random not-ok input",
+      "json": "{\n  \"trigger\": \"contact.birthday\",\n  \"data\": {\n    \"dobVerified\": true,\n    \"ageNow\": 57,\n    \"ageBefore\": 56\n  },\n  \"item\": {\n    \"_id\": \"5e97e8036a9f734dcdc961c9\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e97abd48beea3051136186f\",\n      \"5e9d1c1c9b953262c33e1ab0\",\n      \"5e82a7ce281d6602b698b489\",\n      \"5e82a7cd281d6602b698b485\",\n      \"5f34b2ef2aa7720d3a882766\",\n      \"608a565b6eb42c090022c3fd\",\n      \"608a56b56eb42c090022d259\"\n    ],\n    \"_type\": \"contact\",\n    \"title\": \"Jenny Tasker\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "6200b11fe7912201934f2158",
+      "title": "Actual Input from detail sheet change",
+      "json": "{\n    \"account\": \"5e82a7cd281d6602b698b481\",\n    \"user\": {\n        \"_id\": \"5eb14f76f4e2c15ffb9bf805\",\n        \"name\": \"Sam Rae\",\n        \"firstName\": \"Sam\",\n        \"lastName\": \"Rae\",\n        \"email\": \"sam@stalbans.org.au\",\n        \"persona\": \"5eb14f10ff872a540dbbbe16\",\n        \"accountType\": \"standard\"\n    },\n    \"item\": \"619ca4f325441b00101f290b\",\n    \"data\": {\n        \"diff\": {\n            \"_references\": {\n                \"_t\": \"a\",\n                \"_0\": [\n                    \"617fd3585efd500c44d9ce60\",\n                    0,\n                    0\n                ]\n            },\n            \"data\": {\n                \"churchAttending\": [\n                    \"617fd3585efd500c44d9ce60\",\n                    0,\n                    0\n                ]\n            }\n        }\n    },\n    \"key\": \"content.edit\",\n    \"trigger\": \"content.edit\",\n    \"message\": \"Updated Test Person - Church Details\",\n    \"model\": \"contactdetail\",\n    \"managedUser\": \"5eb14f10ff872a540dbbbe16\"\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "6205b87dab5822001217102a",
+      "title": "Church not listed (Beth & Stephen Bruce, CREDO 2022)",
+      "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"credo2022\",\n    \"submittedData\": {\n      \"title\": \"CREDO 2022\",\n      \"data\": {\n        \"contact\": [\n          \"5e97da1f6a9f734dcdc922b5\",\n          \"620503c7658a980f10921de4\"\n        ],\n        \"_paymentGateway\": \"61f5553f7f6b4301bf713a61\",\n        \"invoicenumber\": \"Bruc-6362\",\n        \"donationAmount\": 100,\n        \"iamover18\": true\n      },\n      \"realms\": [\n        \"5e82a7ce281d6602b698b488\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"attendsChurch\": \"yes\",\n                  \"churchIsNotListed\": true,\n                  \"churchNotListedName\": \"Providence Bayswater\"\n                }\n              }\n            },\n            \"dietaryRequirements\": [],\n            \"firstName\": \"Beth\",\n            \"lastName\": \"Bruce\",\n            \"gender\": \"female\",\n            \"dob\": \"2000-03-03T00:00:00.000Z\",\n            \"email\": \"perthmillsbeth@gmail.com\",\n            \"phoneNumber\": \"0481180591\",\n            \"registrationtype\": \"standard\",\n            \"mealPreference\": \"Butter chicken\",\n            \"elective\": \"Engaging with Our Secular Culture\",\n            \"elective2\": \"Banksy, Spacey Jane, Fremantle, and Christians\"\n          },\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"attendsChurch\": \"yes\",\n                  \"churchIsNotListed\": true,\n                  \"churchNotListedName\": \"Providence Bayswater\"\n                }\n              }\n            },\n            \"dietaryRequirements\": [],\n            \"firstName\": \"Stephen\",\n            \"lastName\": \"Bruce\",\n            \"gender\": \"male\",\n            \"dob\": \"1997-11-11T00:00:00.000Z\",\n            \"email\": \"sbruces.place@gmail.com\",\n            \"phoneNumber\": \"0422268827\",\n            \"registrationtype\": \"standard\",\n            \"mealPreference\": \"Jamaican Jerk chicken (GF/DF)\",\n            \"elective\": \"Engaging with Our Secular Culture\",\n            \"elective2\": \"Christ and Politics\"\n          }\n        ],\n        \"_paymentGateway\": \"61f5553f7f6b4301bf713a61\",\n        \"invoicenumber\": \"Bruc-6362\",\n        \"donationAmount\": 100,\n        \"iamover18\": true\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"202.65.93.94\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5fbb64696ee9aa64b821d238\",\n      \"payment\": {\n        \"amount\": 15000,\n        \"integration\": \"61f5553f7f6b4301bf713a61\",\n        \"details\": {\n          \"nonce\": \"cnon:CBASEBkMlahSW0OYnSMjdFcUHpk\",\n          \"cardData\": {\n            \"digital_wallet_type\": \"NONE\",\n            \"card_brand\": \"MASTERCARD\",\n            \"last_4\": \"6808\",\n            \"exp_month\": 10,\n            \"exp_year\": 2025\n          },\n          \"idempotencyKey\": \"17ee3969-de9b-4000-8e7e-631de594b000\"\n        }\n      },\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Saturday Only Registration\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        },\n        {\n          \"title\": \"Standard registrations\",\n          \"operation\": \"add\",\n          \"value\": 16000,\n          \"total\": 16000\n        },\n        {\n          \"title\": \"EarlyBird\",\n          \"operation\": \"subtract\",\n          \"value\": 1000,\n          \"total\": 15000\n        }\n      ],\n      \"currency\": \"aud\",\n      \"amount\": 15000,\n      \"transactions\": [\n        \"620503c2658a980f10921dc3\"\n      ],\n      \"transaction\": \"620503c2658a980f10921dc3\",\n      \"primaryEmail\": \"perthmillsbeth@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"5e97da1f6a9f734dcdc922b5\",\n        \"620503c7658a980f10921de4\"\n      ],\n      \"agreements\": {\n        \"iamover18\": \"1. Age Restriction: To attend this event, you must be 18 years or older.\\n2. Sponsor Scheme: A contribution to this scheme helps to cover the cost of registration to our conferences for those otherwise unable to attend. If you wish to apply for a subsidy, please contact the registrar at credoperth@gmail.com. \\n3. Refund Policy: No refund is available for delegates who cancel after the registration closing date.\\n4. The earlybird discount is only available until 11:59pm 14th March 2022.\\n5. Walk-ins on Friday and Saturday night will be available at $10pp subject to availability.\\n6. Please be aware that government regulations are fluid and we will inform you if any restrictions affect CREDO 2022\"\n      },\n      \"attemptLog\": \"620503bf658a980f10921dc1\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"credo2022\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"620503c8658a980f10921df7\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7ce281d6602b698b488\"\n    ],\n    \"title\": \"CREDO 2022\",\n    \"_type\": \"interaction\",\n    \"definition\": \"credo2022\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "620bb32b8e682700170b0fb9",
+      "title": "Form (Not attending church)",
+      "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\",\n    \"submittedData\": {\n      \"title\": \"New church setup test\",\n      \"data\": {\n        \"contact\": [\n          \"619ca4884de7ec000f03a8af\"\n        ]\n      },\n      \"realms\": [\n        \"61f546264d66c70018d73006\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"attendsChurch\": \"no\"\n                }\n              }\n            },\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"gender\": \"male\",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"email\": \"samrae+test@gmail.com\",\n            \"phoneNumber\": \"0439769319\"\n          }\n        ]\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"primaryEmail\": \"samrae+test@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"619ca4884de7ec000f03a8af\"\n      ],\n      \"attemptLog\": \"620ba45f38ef190017e73864\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"newChurchSetupTest\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"620ba46238ef190017e7386a\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"61f546264d66c70018d73006\"\n    ],\n    \"title\": \"New church setup test\",\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "620bb32b8e682700170b0fba",
+      "title": "Blank new church name",
+      "json": "{\n  \"trigger\": \"content.edit\",\n  \"data\": {\n    \"diff\": {\n      \"_references\": {\n        \"_t\": \"a\",\n        \"_0\": [\n          \"617fd3585efd500c44d9ce60\",\n          0,\n          0\n        ]\n      },\n      \"data\": {\n        \"churchAttending\": [\n          {\n            \"_id\": \"617fd3585efd500c44d9ce60\"\n          },\n          0,\n          0\n        ],\n        \"churchIsNotListed\": [\n          false,\n          true\n        ],\n        \"churchNotListedName\": [\n          \"Test church\",\n          \"\"\n        ]\n      }\n    }\n  },\n  \"item\": {\n    \"_id\": \"620a65e9d59ef400184e506a\",\n    \"owners\": [\n      \"5eb14f76f4e2c15ffb9bf805\"\n    ],\n    \"managedOwners\": [\n      \"5eb14f10ff872a540dbbbe16\"\n    ],\n    \"realms\": [\n      \"619376c2ac6eda000f1d32cb\"\n    ],\n    \"_type\": \"contactdetail\",\n    \"author\": \"5eb14f76f4e2c15ffb9bf805\",\n    \"managedAuthor\": \"5eb14f10ff872a540dbbbe16\",\n    \"definition\": \"churchDetails\",\n    \"title\": \"Test Person - Church Details\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "621f8cacaf3a0f0088188759",
+      "title": "Update PMC Details (ie. invalid detail sheet)",
+      "json": "{\n  \"trigger\": \"content.edit\",\n  \"data\": {\n    \"diff\": {\n      \"data\": {\n        \"pmcKeyContact\": {\n          \"churchname\": [\n            \"\",\n            \"St Alban's\"\n          ],\n          \"numberBrochures\": [\n            \"\",\n            \"25\"\n          ],\n          \"street\": [\n            \"\",\n            \"37a Third Ave\"\n          ],\n          \"suburb\": [\n            \"\",\n            \"Bassendean\"\n          ],\n          \"state\": [\n            \"\",\n            \"WA\"\n          ],\n          \"postcode\": [\n            \"\",\n            \"6054\"\n          ]\n        }\n      }\n    }\n  },\n  \"item\": {\n    \"_id\": \"621f29d67fe9a00035e51068\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b484\"\n    ],\n    \"definition\": \"pmcDetails\",\n    \"_type\": \"contactdetail\",\n    \"title\": \"Sam Rae - PMC Details\"\n  }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "621f8cacaf3a0f008818875a",
+      "title": "Submit wrong type of details sheet via form",
+      "json": "{\"account\":\"5e82a7cd281d6602b698b481\",\"user\":{\"_id\":\"5eff0aa041a86b0cfbe961c5\",\"accountType\":\"application\"},\"item\":\"621f2eea0381be0035a19de6\",\"data\":{\"_type\":\"interaction\",\"definition\":\"pmcKeyContactForm\",\"submittedData\":{\"title\":\"PMC Key Contact Form\",\"data\":{\"contact\":\"5e97e0806a9f734dcdc940f1\"},\"realms\":[\"5e82a7cd281d6602b698b484\"],\"rawData\":{\"contact\":{\"details\":{\"pmcDetails\":{\"data\":{\"pmcKeyContact\":{\"churchname\":\"St Alban's Anglican Church\",\"numberBrochures\":\"25\",\"street\":\"37a Third Ave\",\"suburb\":\"Bassendean\",\"state\":\"WA\",\"postcode\":\"6054\"}}}},\"firstName\":\"Sam\",\"lastName\":\"Rae\",\"email\":\"samrae@gmail.com\",\"phoneNumber\":\"0439769319\"}},\"connectionData\":{\"ip\":{\"clientIp\":\"144.139.213.249\",\"clientIpRoutable\":true}},\"applicationAuthor\":\"5eff0aa041a86b0cfbe961c5\",\"account\":\"5e82a7cd281d6602b698b481\",\"primaryEmail\":\"samrae@gmail.com\",\"contact\":null,\"contacts\":[\"5e97e0806a9f734dcdc940f1\"],\"attemptLog\":\"621f2ee70381be0035a19ddc\",\"mentions\":[],\"hashtags\":[],\"_type\":\"interaction\",\"definition\":\"pmcKeyContactForm\"}},\"key\":\"content.create\",\"trigger\":\"content.create\",\"message\":\"Created PMC Key Contact Form\",\"model\":\"interaction\"}",
+      "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "62255f9d24849201ddffd02f",
+      "title": "Detail sheet that failed",
+      "json": "{\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"status\": \"active\",\n    \"hashtags\": [],\n    \"_references\": [\n        \"5e9d1c1a9b953262c33e1a9f\"\n    ],\n    \"mentions\": [],\n    \"keywords\": [\n        \"common\"\n    ],\n    \"privacy\": \"secure\",\n    \"realms\": [\n        \"619376c2ac6eda000f1d32cb\"\n    ],\n    \"_id\": \"61974285f14153000f62943c\",\n    \"_type\": \"contactdetail\",\n    \"title\": \"Church Details\",\n    \"definition\": \"churchDetails\",\n    \"data\": {\n        \"attendsChurch\": \"yes\",\n        \"churchAttending\": \"5e9d1c1a9b953262c33e1a9f\"\n    },\n    \"contact\": \"5e97c8789d7098339dc35bba\",\n    \"account\": \"5e82a7cd281d6602b698b481\",\n    \"reactionAuthor\": \"617fbc2284ce9b294b2a7143\",\n    \"created\": \"2021-11-19T06:21:57.231Z\",\n    \"updated\": \"2022-03-06T12:29:41.372Z\",\n    \"statDates\": {\n        \"view\": \"2022-03-06T16:37:26.683Z\"\n    },\n    \"stats\": {\n        \"view\": 1\n    }\n}",
+      "testEmail": "sam@stalbans.org.au"
+    }
+  ],
+  "apikey": "$2a$10$M8ynMn0.2YHNgE1PJHMgMuhcP9SLn0NZ4dVcHtvfgowv05Rha9LYO",
+  "data": {
+
+  },
+  "statDates": {
+    "view": "2022-03-07T01:25:53.386Z"
+  },
+  "stats": {
+    "view": 4
+  }
+}
