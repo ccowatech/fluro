@@ -41,7 +41,7 @@ function emailTicketInfo(contact, index, next) {
 
     let emailBody = `
     <div style="text-align: center;">
-        <h1>${interaction.realm.title} check-in details</h1>
+        <h1>${interaction.realm.shortTitle} check-in details</h1>
         <hr/>
         <img src="https://api.fluro.io/system/qr?input=${ticketURL}" style="border: 10px solid black; border-radius: 10px;" width="150px"/>
         <h3>${contact.firstName} ${contact.lastName}</h3>
@@ -66,7 +66,7 @@ function emailTicketInfo(contact, index, next) {
     	"fromEmail": interaction.realm.email,
     	"toEmails": contact.email,
     	//"toContactIDs": [""],
-    	"subject": `${interaction.realm.title} check-in details`,
+    	"subject": `${interaction.realm.shortTitle} check-in details`,
     	"body": emailBody
     };
 

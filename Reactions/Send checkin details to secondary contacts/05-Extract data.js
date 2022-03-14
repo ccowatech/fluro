@@ -8,6 +8,7 @@ let interaction = {
     "definition": input.interaction.definition,
     "realm": {
         "title": input.interaction.realms[0].title,
+        "shortTitle": input.interaction.realms[0].data.shortTitle,
         "email": input.interaction.realms[0].data.registrarEmail
     }
 };
