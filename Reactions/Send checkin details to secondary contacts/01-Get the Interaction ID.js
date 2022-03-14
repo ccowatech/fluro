@@ -1,4 +1,6 @@
-// Get the interaction ID
+/*
+Get the interaction ID
+*/
 
 let inputType;
 let interaction;
