@@ -21,8 +21,17 @@ let secondaryContacts = _.get(input, 'secondaryContacts');
 let ticketURL = `http://tickets.fluro.io/interaction/${interaction._id}`;
 let interactionURL = `https://app.fluro.io/list/interaction/${interaction.definition}/${interaction._id}/edit`;
 
+// Filter out Contacts with no tickets
+let secondaryContactIDs = Object.keys(secondaryContacts);
+let secondaryContactsWithTickets = {};
+for(let i=0; i<secondaryContactIDs.length; i++) {
+    if(secondaryContacts[secondaryContactIDs[i]].hasOwnProperty("tickets")) {
+        secondaryContactsWithTickets[secondaryContactIDs[i]] = secondaryContacts[secondaryContactIDs[i]];
+    }
+}
+
 // Run the async function
-return async.forEachOfSeries(secondaryContacts, emailTicketInfo, emailTicketInfoCallback);
+return async.forEachOfSeries(secondaryContactsWithTickets, emailTicketInfo, emailTicketInfoCallback);
 
 // Function to execute on each contact
 function emailTicketInfo(contact, index, next) {

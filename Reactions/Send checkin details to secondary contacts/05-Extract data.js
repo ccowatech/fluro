@@ -17,6 +17,11 @@ let interaction = {
 let primaryContact;
 let secondaryContacts = {};
 
+if(!input.interaction.rawData.hasOwnProperty("contact")) {
+    // If no contacts attached to this interaction, stop the Reaction
+    return done(null, 'STOP');
+}
+
 for(let i=0; i<input.interaction.rawData.contact.length; i++) {
     if(input.interaction.rawData.contact[i].email == input.interaction.primaryEmail) {
 

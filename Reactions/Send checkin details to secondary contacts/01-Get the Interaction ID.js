@@ -5,19 +5,15 @@ Get the interaction ID
 let inputType;
 let interaction;
 
-if(input.hasOwnProperty("item")) {
-    if(input.item._type == "interaction") {
-        inputType = "AutoInteraction";
+if(input.trigger == "manual.spark" && input.data._type == "interaction") {
+    inputType = "manualInteraction";
+    interaction = input.item._id;
 
-        interaction = input.item._id;
-    }
-} else if (input.hasOwnProperty("_type")) {
-    if(input._type == "interaction") {
-        inputType = "ManualInteraction";
+} else if (input.trigger == "content.create" && input.data._type == "interaction") {
+    inputType = "autoInteraction";
+    interaction = input.item;
 
-        interaction = input._id;
-    }
-} else { // Input type is invalid
+} else {
     inputType = "unknown";
 }
 

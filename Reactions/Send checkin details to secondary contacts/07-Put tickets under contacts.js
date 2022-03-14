@@ -7,6 +7,11 @@ let primaryContact = input.primaryContact;
 let secondaryContacts = input.secondaryContacts;
 let tickets = input.tickets[0];
 
+// If no tickets, stop the Reaction
+if(tickets.length < 1) {
+    return done(null, "STOP");
+}
+
 // Put tickets under each contact
 for (let i=0; i<tickets.length; i++) {
 
