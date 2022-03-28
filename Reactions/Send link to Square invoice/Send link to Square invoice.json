@@ -63,7 +63,7 @@
       "conditions": [],
       "type": "code",
       "_id": "61f52662cea4ea0013ddefdd",
-      "script": "/*\nThis Reaction automatically sends a link to the\nSquare Invoice to the first contact whenever a form is\nfilled out.\n*/\n\n/*\nValidate input and get Interaction ID\n*/\n\nlet inputType;\nlet interaction;\n\nif (input.trigger === 'manual.spark' &amp;&amp; input.data._type === 'interaction') {\n    inputType = 'manualInteraction';\n    interaction = input.item._id;\n} else if (input.trigger === 'content.create' &amp;&amp; input.data._type === 'interaction') {\n    inputType = 'autoInteraction';\n    interaction = input.item;\n} else {\n    inputType = 'unknown';\n}\n\n// Clear input and put back what we need\ninput = {};\ninput.interaction = interaction;\ninput.inputType = inputType;\n\n// Finish the action and send the input to the next action\nreturn done(null, input);",
+      "script": "/*\nThis Reaction automatically sends a link to the\nSquare Invoice to the first contact whenever a form is\nfilled out.\n*/\n\n/*\nGet Interaction ID\n*/\n\nlet inputType;\nlet interaction;\n\nif (input.trigger === 'manual.spark' &amp;&amp; input.data._type === 'interaction') {\n    inputType = 'manualInteraction';\n    interaction = input.item._id;\n} else if (input.trigger === 'content.create' &amp;&amp; input.data._type === 'interaction') {\n    inputType = 'autoInteraction';\n    interaction = input.item;\n} else {\n    inputType = 'unknown';\n}\n\n// Clear input and put back what we need\ninput = {};\ninput.interaction = interaction;\ninput.inputType = inputType;\n\n// Finish the action and send the input to the next action\nreturn done(null, input);",
       "deactivate": false
     },
     {
@@ -257,7 +257,7 @@
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-01-25T16:08:16.144Z",
-  "updated": "2022-03-28T14:26:43.647Z",
+  "updated": "2022-03-28T14:53:57.074Z",
   "apikey": "$2a$10$36TcMneEPx7POOeNib.amuHilzuaCT9CdBQAbXHdd6f2If4c8d/qO",
   "data": {},
   "statDates": {
