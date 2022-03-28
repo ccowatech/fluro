@@ -1,5 +1,5 @@
 <h2>Thanks for your payment!</h2>
-<h4>Your payment to CCOWA for <%= get('input.formTitle') %> has been succesful.</h4>
+<h4>Your payment for <%= get('input.formTitle') %> has been succesful.</h4>
 <hr/>
 <p>Your receipt from Square, our payment processor, is available here:</p>
 <p><b><a href="<%= get('input.receiptUrl') %>">View your Invoice/Receipt</a></b></p>
@@ -11,13 +11,13 @@ The payment will appear on your bank account as <%= get('input.statementDescript
 <hr/>
 <h4>Problem?</h4>
 
-<p>For help with this payment, forward this email to <%= get('input.contactEmail') %>.</p>
+<p>For help with this payment, reply to this email, or forward it to <%= get('input.fromEmail') %>.</p>
 <hr/>
 <p><small>Christian Conventions of Western Australia<br/>
 ABN 38 223 904 915<br/>
 info@ccowa.org</small></p>
 
 <p style="color:#AAA;"><small>
-Admin links:
+Admin links: 
 <a href="<%= get('input.interactionLink') %>">Form submission</a> | <a href="<%= get('input.transactionLink') %>">Transaction</a>
 </small></p>

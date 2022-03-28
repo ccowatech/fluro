@@ -5,21 +5,25 @@ filled out.
 */
 
 /*
-Validate input
+Get Interaction ID
 */
 
-var inputType;
+let inputType;
+let interaction;
 
-if(input.trigger == "manual.spark" && input.data["_type"] == "interaction") {
-    inputType = "manualInteraction";
-} else if (input.trigger == "content.create" && input.data["_type"] == "interaction") {
-    inputType = "autoInteraction";
+if (input.trigger === 'manual.spark' && input.data._type === 'interaction') {
+    inputType = 'manualInteraction';
+    interaction = input.item._id;
+} else if (input.trigger === 'content.create' && input.data._type === 'interaction') {
+    inputType = 'autoInteraction';
+    interaction = input.item;
 } else {
-    // Unknown input. Stop the Reaction
-    return done(null, 'STOP');
+    inputType = 'unknown';
 }
 
-
+// Clear input and put back what we need
+input = {};
+input.interaction = interaction;
 input.inputType = inputType;
 
 // Finish the action and send the input to the next action
