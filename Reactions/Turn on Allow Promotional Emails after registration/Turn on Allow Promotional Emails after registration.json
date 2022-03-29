@@ -26,15 +26,9 @@
     }
   ],
   "status": "active",
-  "hashtags": [
-
-  ],
-  "_references": [
-
-  ],
-  "mentions": [
-
-  ],
+  "hashtags": [],
+  "_references": [],
+  "mentions": [],
   "keywords": [
     "christian conventions of wa inc"
   ],
@@ -45,21 +39,11 @@
   "conditions": [
     "input.item._type == 'interaction'"
   ],
-  "contacts": [
-
-  ],
-  "teams": [
-
-  ],
-  "integrations": [
-
-  ],
-  "items": [
-
-  ],
-  "styles": [
-
-  ],
+  "contacts": [],
+  "teams": [],
+  "integrations": [],
+  "items": [],
+  "styles": [],
   "realms": [
     {
       "_id": "5e82a7cd281d6602b698b483",
@@ -70,44 +54,32 @@
       "_type": "realm"
     }
   ],
-  "policies": [
-
-  ],
+  "policies": [],
   "developmentMode": false,
-  "tags": [
-
-  ],
+  "tags": [],
   "actions": [
     {
-      "conditions": [
-
-      ],
+      "conditions": [],
       "type": "code",
       "_id": "620cc5ed7ccefc0016d38a5b",
       "script": "/*\nThis Reaction re-subscribes all contacts to \nAllow Promotional Emails when they submit a form.\n*/\n\nreturn done(null, input);"
     },
     {
-      "conditions": [
-
-      ],
+      "conditions": [],
       "type": "populate",
       "_id": "620cc5ed7ccefc0016d38a5c",
       "data": {
         "keys": [
           "item"
         ],
-        "populateSelect": [
-
-        ]
+        "populateSelect": []
       }
     },
     {
-      "conditions": [
-
-      ],
+      "conditions": [],
       "type": "code",
       "_id": "61a4ca045c68ba000e5b9753",
-      "script": "/*\nFormat input based on what it is.\n*/\n\n// Create variables\nvar inputType;\nvar contacts;\n\n// Check that this is an interaction with contacts attached, then check for trigger type\nif (input.data._type == \"interaction\" && input.item.hasOwnProperty(\"contacts\") && input.trigger == \"content.create\") {\n    inputType = \"autoInteraction\";\n    contacts = input.item.contacts;\n} else if (input.data._type == \"interaction\" && input.item.hasOwnProperty(\"contacts\") && input.trigger == \"manual.spark\") {\n    inputType = \"manualInteraction\";\n    contacts = input.item.contacts;\n} else {\n    inputType = \"unknown\";\n}\n\n// Return data\ninput = {};\ninput.inputType = inputType;\ninput.contacts = contacts;\n\nreturn done(null, input);",
+      "script": "/*\nFormat input based on what it is.\n*/\n\n// Create variables\nvar inputType;\nvar contacts;\n\n// Check that this is an interaction with contacts attached, then check for trigger type\nif (input.data._type == \"interaction\" &amp;&amp; input.item.hasOwnProperty(\"contacts\") &amp;&amp; input.trigger == \"content.create\") {\n    inputType = \"autoInteraction\";\n    contacts = input.item.contacts;\n} else if (input.data._type == \"interaction\" &amp;&amp; input.item.hasOwnProperty(\"contacts\") &amp;&amp; input.trigger == \"manual.spark\") {\n    inputType = \"manualInteraction\";\n    contacts = input.item.contacts;\n} else {\n    inputType = \"unknown\";\n}\n\n// Return data\ninput = {};\ninput.inputType = inputType;\ninput.contacts = contacts;\n\nreturn done(null, input);",
       "deactivate": false
     },
     {
@@ -118,9 +90,7 @@
       "_id": "620cc5ed7ccefc0016d38a5e"
     },
     {
-      "conditions": [
-
-      ],
+      "conditions": [],
       "type": "populate",
       "_id": "620cc5ed7ccefc0016d38a5f",
       "data": {
@@ -134,18 +104,14 @@
       }
     },
     {
-      "conditions": [
-
-      ],
+      "conditions": [],
       "type": "code",
       "_id": "61b06936ce49290013588059",
-      "script": "/*\nRe-subscribe people to Allow Promotional Emails\n*/\n\n// Get input into variables\nvar contacts = input.contacts;\nvar emailsToSubscribe = [];\n\n// Set up request headers\nconst headers = {\"Content-Type\": \"application/json; charset=utf-8\"};\n\n// Set up results objects\nconst results = [];\n\n// Build array of emails to process. All the email addresses for a contact must be resubscribed for the Allow Promotional Emails setting to turn on.\nfor(let i=0; i<contacts.length; i++) {\n    for(let j=0; j<contacts[i].emails.length; j++) {\n        emailsToSubscribe.push(contacts[i].emails[j]);\n    }\n}\n\nlet body = { \"emails\": emailsToSubscribe };\n\nreturn $fluro.api.post(\"/mailout/resubscribe\", body, headers) \n.then(function(res) { \n    results.push(res.data);\n\n    // Return results\n    input.results = results;\n    return done(null, input);\n}, done);",
+      "script": "/*\nRe-subscribe people to Allow Promotional Emails\n*/\n\n// Get input into variables\nconst contacts = input.contacts;\nconst emailsToSubscribe = [];\n\n// Set up request headers\nconst headers = { 'Content-Type': 'application/json; charset=utf-8' };\n\n// Set up results objects\nconst results = [];\n\n// Build array of emails to process.\n// All the email addresses for a contact must be resubscribed\n// for the Allow Promotional Emails setting to turn on.\nfor (let i = 0; i &lt; contacts.length; i += 1) {\n    for (let j = 0; j &lt; contacts[i].emails.length; j += 1) {\n        emailsToSubscribe.push(contacts[i].emails[j]);\n    }\n}\n\nconst body = { emails: emailsToSubscribe };\n\nreturn $fluro.api.post('/mailout/resubscribe', body, headers)\n    .then((res) =&gt; {\n        results.push(res.data);\n\n        // Return results\n        input.results = results;\n        return done(null, input);\n    }, done);",
       "deactivate": false
     },
     {
-      "conditions": [
-
-      ],
+      "conditions": [],
       "type": "stop",
       "_id": "61a4ca045c68ba000e5b9755",
       "deactivate": false
@@ -235,11 +201,9 @@
   },
   "updatedBy": "Sam Rae",
   "created": "2022-01-24T07:20:37.710Z",
-  "updated": "2022-02-17T09:32:22.899Z",
+  "updated": "2022-03-29T12:03:32.297Z",
   "apikey": "$2a$10$W7TEAs03C79CdEGqqWiuKe8hd2EudtD9C76JHJTm7xUEi5xlyD4T6",
-  "data": {
-
-  },
+  "data": {},
   "statDates": {
     "view": "2022-01-28T17:34:15.106Z"
   },

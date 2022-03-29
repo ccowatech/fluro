@@ -3,18 +3,18 @@ Format input based on what it is.
 */
 
 // Create variables
-var inputType;
-var contacts;
+let inputType;
+let contacts;
 
 // Check that this is an interaction with contacts attached, then check for trigger type
-if (input.data._type == "interaction" && input.item.hasOwnProperty("contacts") && input.trigger == "content.create") {
-    inputType = "autoInteraction";
+if (input.data._type === 'interaction' && input.item.hasOwnProperty('contacts') && input.trigger === 'content.create') {
+    inputType = 'autoInteraction';
     contacts = input.item.contacts;
-} else if (input.data._type == "interaction" && input.item.hasOwnProperty("contacts") && input.trigger == "manual.spark") {
-    inputType = "manualInteraction";
+} else if (input.data._type === 'interaction' && input.item.hasOwnProperty('contacts') && input.trigger === 'manual.spark') {
+    inputType = 'manualInteraction';
     contacts = input.item.contacts;
 } else {
-    inputType = "unknown";
+    inputType = 'unknown';
 }
 
 // Return data
