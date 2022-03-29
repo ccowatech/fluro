@@ -89,7 +89,7 @@
       "conditions": [],
       "type": "code",
       "_id": "61b06936ce49290013588059",
-      "script": "/*\nAdd Contact to Realm\n*/\n\n// Load packages\nconst _ = require('lodash');\nconst async = require('async');\n\n// Set up request headers\nconst headers = { 'Content-Type': 'application/json; charset=utf-8' };\n\n// Set up results structures to return info to the next step\nconst result = {};\nconst successfulContacts = [];\n\n// Get input data needed\nconst interactionRealms = _.get(input, 'interactionRealms');\n\n// Run the async functions\nreturn async.forEachOfSeries(contacts, updateRealms, callback);\n\n// Function to execute on each contact\nfunction updateRealms(contact, index, next) {\n    const contactRealms = contact.realms;\n    const newRealms = contactRealms.concat(interactionRealms);\n\n    const body = {\n        realms: newRealms,\n    };\n\n    $fluro.api.put(`/content/contact/${contact._id}`, body, headers)\n        .then((res) =&gt; {\n            successfulContacts.push(contact._id);\n            next();\n        })\n        .catch((err) =&gt; next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction callback(err) {\n    if (err) {\n        const errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, 'STOP');\n    }\n    // Return results\n    result.successfulContacts = successfulContacts;\n\n    input.result = result;\n    return done(null, input);\n}",
+      "script": "/*\nAdd Contact to Realm\n*/\n\n// Load packages\nconst _ = require('lodash');\nconst async = require('async');\n\n// Set up request headers\nconst headers = { 'Content-Type': 'application/json; charset=utf-8' };\n\n// Set up results structures to return info to the next step\nconst result = {};\nconst successfulContacts = [];\n\n// Get input data needed\nconst interactionRealms = _.get(input, 'interactionRealms');\nconst contacts = _.get(input, 'contacts');\n\n// Run the async functions\nreturn async.forEachOfSeries(contacts, updateRealms, callback);\n\n// Function to execute on each contact\nfunction updateRealms(contact, index, next) {\n    const contactRealms = contact.realms;\n    const newRealms = contactRealms.concat(interactionRealms);\n\n    const body = {\n        realms: newRealms\n    };\n\n    $fluro.api.put(`/content/contact/${contact._id}`, body, headers)\n        .then((res) =&gt; {\n            successfulContacts.push(contact._id);\n            next();\n        })\n        .catch((err) =&gt; next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction callback(err) {\n    if (err) {\n        const errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, 'STOP');\n    }\n    // Return results\n    result.successfulContacts = successfulContacts;\n\n    input.result = result;\n    return done(null, input);\n}",
       "deactivate": false
     },
     {
@@ -155,7 +155,7 @@
   },
   "updatedBy": "Sam Rae",
   "created": "2021-07-13T05:29:06.599Z",
-  "updated": "2022-03-29T08:41:07.005Z",
+  "updated": "2022-03-29T11:17:55.125Z",
   "tests": [
     {
       "_id": "61b16f3893f1190a2c5b7818",
