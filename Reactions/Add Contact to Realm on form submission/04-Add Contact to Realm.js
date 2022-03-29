@@ -15,7 +15,6 @@ const successfulContacts = [];
 
 // Get input data needed
 const interactionRealms = _.get(input, 'interactionRealms');
-const contacts = _.get(input, 'contacts');
 
 // Run the async functions
 return async.forEachOfSeries(contacts, updateRealms, callback);
@@ -26,7 +25,7 @@ function updateRealms(contact, index, next) {
     const newRealms = contactRealms.concat(interactionRealms);
 
     const body = {
-        realms: newRealms
+        realms: newRealms,
     };
 
     $fluro.api.put(`/content/contact/${contact._id}`, body, headers)
