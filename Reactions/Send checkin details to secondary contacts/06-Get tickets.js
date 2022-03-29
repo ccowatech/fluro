@@ -2,15 +2,14 @@
 Get tickets related to these contacts and this interaction
 */
 
-//Load packages
-var _ = require('lodash');
-var async = require('async');
+// Load packages
+const _ = require('lodash');
 
 // Set up results structures to return info to the next step]
-var tickets = [];
+const tickets = [];
 
 // Get input data needed
-let interactionID = _.get(input, 'interaction._id');
+const interactionID = _.get(input, 'interaction._id');
 
 /*
 GET https://api.fluro.io/tickets/:connection/:connectionID
@@ -23,11 +22,11 @@ Options are
 /tickets/event/<EVENTID>
 */
 $fluro.api.get(`/tickets/interaction/${interactionID}`)
-    .then(res => {
+    .then((res) => {
         tickets.push(res.data);
     })
-    .catch(err => {
-        return done(err, "STOP");
+    .catch((err) => {
+        return done(err, 'STOP');
     });
 
 // Return results
