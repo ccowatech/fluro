@@ -1,269 +1,248 @@
 {
-  "_id": "61ffe393e7912201934ee8e4",
-  "apikey_unique": {
-    "type": "Point",
-    "coordinates": [
-      0,
-      0
-    ]
+  "_id":"61ffe393e7912201934ee8e4",
+  "apikey_unique":{
+  "type":"Point",
+  "coordinates":[
+  0,
+  0,
+  ]
   },
-  "owners": [
-    {
-      "_id": "5eb14f76f4e2c15ffb9bf805",
-      "firstName": "Sam",
-      "lastName": "Rae",
-      "name": "Sam Rae",
-      "_type": "user"
-    }
-  ],
-  "managedOwners": [
-    {
-      "_id": "5eb14f10ff872a540dbbbe16",
-      "_type": "persona",
-      "firstName": "Sam",
-      "title": "Sam Rae",
-      "lastName": "Rae"
-    }
-  ],
-  "status": "active",
-  "hashtags": [
-
-  ],
-  "_references": [
-
-  ],
-  "mentions": [
-
-  ],
-  "keywords": [
-    "christian conventions of wa inc"
-  ],
-  "privacy": "secure",
-  "triggers": [
-    "reaction.error"
-  ],
-  "conditions": [
-
-  ],
-  "contacts": [
-
-  ],
-  "teams": [
-
-  ],
-  "integrations": [
-
-  ],
-  "items": [
-
-  ],
-  "styles": [
-
-  ],
-  "realms": [
-    {
-      "_id": "5e82a7cd281d6602b698b483",
-      "title": "Christian Conventions of WA Inc",
-      "color": "#7f12b3",
-      "bgColor": "#e7b3ff",
-      "slug": "christian-conventions-of-wa-inc",
-      "_type": "realm"
-    }
-  ],
-  "policies": [
-
-  ],
-  "developmentMode": false,
-  "tags": [
-
-  ],
-  "actions": [
-    {
-      "conditions": [
-
-      ],
-      "type": "populate",
-      "_id": "61ffe7157839ef01ee82f61a",
-      "data": {
-        "keys": [
-          "item"
-        ],
-        "populateSelect": [
-          "title"
-        ]
-      }
-    },
-    {
-      "conditions": [
-
-      ],
-      "type": "email",
-      "_id": "61ffe3c2984cff001185fb60",
-      "data": {
-        "keys": [
-
-        ],
-        "contacts": [
-          {
-            "_id": "5e97e0806a9f734dcdc940f1",
-            "owners": [
-
-            ],
-            "managedOwners": [
-
-            ],
-            "realms": [
-              "5e82a7cd281d6602b698b484",
-              "6088c1cb87f82418764b7114",
-              "5e97abd48beea3051136186f",
-              "5e82a7cd281d6602b698b482",
-              "5e82a7cd281d6602b698b486",
-              "5e82a7ce281d6602b698b488",
-              "5e82a7cd281d6602b698b485",
-              "5e82a7ce281d6602b698b489",
-              "5e82a7cd281d6602b698b483",
-              "608a565b6eb42c090022c3fd",
-              "608a56b56eb42c090022d259",
-              "608a570bd9e05730879ce9c2",
-              "61f546264d66c70018d73006",
-              "606ecb8ec9c89661558d0bc1",
-              "6215e2e8d7cc7c001956c492",
-              "5e9d1bf79b953262c33e187f"
-            ],
-            "tags": [
-
-            ],
-            "_type": "contact",
-            "data": {
-              "futureContact": "N",
-              "import": {
-                "Name for sorting": "Rae, Samuel",
-                "Surname": "Rae",
-                "First name": "Samuel",
-                "Nametag": "Sam Rae",
-                "Category": "0",
-                "Future contact": "N",
-                "Pending": "1",
-                "Share?": "n",
-                "Email": "samrae@gmail.com",
-                "Email status": "0",
-                "Wrong": "0",
-                "Year of birth": "0",
-                "Last update when": "16/07/15 17:55",
-                "Last update who": "Teamlist web user",
-                "Record #": "158980",
-                "Member of": "pmc2015",
-                "index": 9945,
-                "Sex": "M",
-                "Church denom name": "Baptist",
-                "Church name": "Atwell Community Church",
-                "Phone(m)": "043976319",
-                "Street": "10 Radiance Link",
-                "Suburb": "Atwell",
-                "State": "WA",
-                "Postcode": "6164",
-                "DOB": "19/05/1982",
-                "Info": "St Matthew's Uni Church",
-                "Prefname": "Sam"
-              }
-            },
-            "account": "5e82a7cd281d6602b698b481",
-            "title": "Sam Rae"
-          }
-        ],
-        "teams": [
-
-        ],
-        "emailTemplate": null,
-        "title": "Reaction error",
-        "htmlBody": "<h3>There has been an error in a Reaction in Fluro.</h3>\n\n<h4>Reaction:</h4>\n<p><%= get('input.item.title') %></p>\n\n<h4>Error:</h4>\n<p><%= get('input.message') %></p>\n<p><%= get('input.data.error.errorMessage') %></p>\n\n<h4>Input:</h4>\n<pre><%= JSON.stringify(get('input'),null,2) %></pre>"
-      },
-      "deactivate": false
-    },
-    {
-      "conditions": [
-
-      ],
-      "type": "stop",
-      "_id": "61ffe393e7912201934ee8e5"
-    }
-  ],
-  "permissionSets": [
-    {
-      "realms": [
-        {
-          "_id": "5e82a7cd281d6602b698b483",
-          "status": "active",
-          "title": "Christian Conventions of WA Inc",
-          "color": "#7f12b3",
-          "bgColor": "#e7b3ff",
-          "created": "2020-03-31T02:15:41.877Z",
-          "updated": "2020-03-31T02:15:41.912Z",
-          "slug": "christian-conventions-of-wa-inc",
-          "_type": "realm"
-        }
-      ],
-      "roles": [
-        {
-          "_id": "57f4640c461bb7401a858f77",
-          "title": "Full Access",
-          "_type": "role",
-          "realms": [
-            "54ebd2ef3a6e88a31bb68640"
-          ],
-          "status": "active",
-          "updated": "2021-02-24T06:19:11.856Z",
-          "created": "2016-10-05T02:23:08.750Z",
-          "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system"
-        }
-      ]
-    }
-  ],
-  "title": "Reaction error reporting",
-  "tests": [
-    {
-      "_id": "61ffe393e7912201934ee8e6",
-      "title": "Reaction error",
-      "json": "{\n  \"trigger\": \"reaction.error\",\n  \"data\": {\n    \"error\": {\n      \"type\": \"EvaluationError\",\n      \"data\": {},\n      \"message\": \"Could not evaluate condition\"\n    },\n    \"actionIndex\": 5\n  },\n  \"item\": {\n    \"_id\": \"61f7c2afd6934a0011d8a8d0\",\n    \"owners\": [\n      \"5eb14f76f4e2c15ffb9bf805\"\n    ],\n    \"managedOwners\": [\n      \"5eb14f10ff872a540dbbbe16\"\n    ],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"Update Contact's church from Detail Sheet\",\n    \"author\": \"5eb14f76f4e2c15ffb9bf805\",\n    \"managedAuthor\": \"5eb14f10ff872a540dbbbe16\",\n    \"_type\": \"reaction\"\n  }\n}",
-      "testEmail": "sam@stalbans.org.au"
-    },
-    {
-      "_id": "61ffe7157839ef01ee82f61e",
-      "title": "Update Contact's church from Detail Sheet error",
-      "json": "{\n  \"trigger\": \"reaction.error\",\n  \"data\": {\n    \"error\": {\n      \"type\": \"Error\",\n      \"data\": {\n        \"errorType\": \"ReferenceError\",\n        \"errorMessage\": \"adfasdfadf is not defined\",\n        \"trace\": [\n          \"ReferenceError: adfasdfadf is not defined\",\n          \"    at module.exports (./index.js:21:9)\",\n          \"    at Object.base.apply (/var/task/node_modules/vm2/lib/contextify.js:228:34)\",\n          \"    at Runtime.exports.handler (/var/task/index.js:118:12)\",\n          \"    at Runtime.handleOnce (/var/runtime/Runtime.js:66:25)\"\n        ]\n      }\n    },\n    \"actionIndex\": 0,\n    \"trigger\": {\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"user\": {\n        \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n        \"accountType\": \"application\"\n      },\n      \"item\": \"61ffda42e7912201934ee80a\",\n      \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"newChurchSetupTest\",\n        \"submittedData\": {\n          \"title\": \"New church setup test\",\n          \"data\": {\n            \"contact\": [\n              \"619ca4884de7ec000f03a8af\"\n            ]\n          },\n          \"realms\": [\n            \"61f546264d66c70018d73006\"\n          ],\n          \"rawData\": {\n            \"contact\": [\n              {\n                \"details\": {\n                  \"churchDetails\": {\n                    \"data\": {\n                      \"doyouattendachurch\": \"yes\",\n                      \"churchAttending\": {\n                        \"_id\": \"6183a592ff54a70c8879706c\",\n                        \"status\": \"active\",\n                        \"realms\": [\n                          \"5e82a7cd281d6602b698b483\",\n                          \"6183a592ff54a70c8879706e\"\n                        ],\n                        \"_type\": \"team\",\n                        \"title\": \"Test 2 Church\",\n                        \"definition\": \"church\",\n                        \"created\": \"2021-11-04T09:19:14.017Z\",\n                        \"updated\": \"2022-02-06T10:40:36.585Z\",\n                        \"slug\": \"test-2-church-ges5sptkp\",\n                        \"firstLine\": \"Another test church\",\n                        \"value\": \"6183a592ff54a70c8879706c\"\n                      }\n                    }\n                  }\n                },\n                \"firstName\": \"Test\",\n                \"lastName\": \"Person\",\n                \"gender\": \"male\",\n                \"dob\": \"1982-05-19T00:00:00.000Z\",\n                \"email\": \"samrae+test@gmail.com\",\n                \"phoneNumber\": \"0439769319\"\n              }\n            ]\n          },\n          \"connectionData\": {\n            \"ip\": {\n              \"clientIp\": \"159.196.133.245\",\n              \"clientIpRoutable\": true\n            }\n          },\n          \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n          \"account\": \"5e82a7cd281d6602b698b481\",\n          \"primaryEmail\": \"samrae+test@gmail.com\",\n          \"contact\": null,\n          \"contacts\": [\n            \"619ca4884de7ec000f03a8af\"\n          ],\n          \"attemptLog\": \"61ffda3fe7912201934ee804\",\n          \"mentions\": [],\n          \"hashtags\": [],\n          \"_type\": \"interaction\",\n          \"definition\": \"newChurchSetupTest\"\n        }\n      },\n      \"key\": \"content.create\",\n      \"trigger\": \"content.create\",\n      \"message\": \"Created New church setup test\",\n      \"model\": \"interaction\",\n      \"testEmail\": \"sam@stalbans.org.au\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f7c2afd6934a0011d8a8d0\",\n    \"owners\": [\n      \"5eb14f76f4e2c15ffb9bf805\"\n    ],\n    \"managedOwners\": [\n      \"5eb14f10ff872a540dbbbe16\"\n    ],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"Update Contact's church from Detail Sheet\",\n    \"author\": \"5eb14f76f4e2c15ffb9bf805\",\n    \"managedAuthor\": \"5eb14f10ff872a540dbbbe16\",\n    \"_type\": \"reaction\"\n  }\n}",
-      "testEmail": "sam@stalbans.org.au"
-    }
-  ],
-  "account": {
-    "_id": "5e82a7cd281d6602b698b481",
-    "status": "active",
-    "title": "CCOWA",
-    "countryCode": "AU",
-    "timezone": "Australia/Perth"
-  },
-  "author": {
-    "_id": "5eb14f76f4e2c15ffb9bf805",
-    "firstName": "Sam",
-    "lastName": "Rae",
-    "name": "Sam Rae",
-    "_type": "user"
-  },
-  "managedAuthor": {
-    "_id": "5eb14f10ff872a540dbbbe16",
-    "_type": "persona",
-    "firstName": "Sam",
-    "title": "Sam Rae",
-    "lastName": "Rae"
-  },
-  "_type": "reaction",
-  "updatedBy": "Sam Rae",
-  "created": "2022-02-06T15:04:51.372Z",
-  "updated": "2022-03-02T15:02:33.618Z",
-  "apikey": "$2a$10$HykIUi2jEqhy93Z9lAKWQu3WSX1niDncChwwcgXCtMlZAluIIc4D.",
-  "data": {
-
-  },
-  "statDates": {
-
+  "owners":[
+  {
+  "_id":"5eb14f76f4e2c15ffb9bf805",
+  "firstName":"Sam",
+  "lastName":"Rae",
+  "name":"Sam Rae",
+  "_type":"user",
   }
-}
+  ],
+  "managedOwners":[
+  {
+  "_id":"5eb14f10ff872a540dbbbe16",
+  "_type":"persona",
+  "firstName":"Sam",
+  "title":"Sam Rae",
+  "lastName":"Rae",
+  }
+  ],
+  "status":"active",
+  "hashtags":[
+  ],
+  "_references":[
+  ],
+  "mentions":[
+  ],
+  "keywords":[
+  "christian conventions of wa inc",
+  ],
+  "privacy":"secure",
+  "triggers":[
+  "reaction.error",
+  ],
+  "conditions":[
+  ],
+  "contacts":[
+  ],
+  "teams":[
+  ],
+  "integrations":[
+  ],
+  "items":[
+  ],
+  "styles":[
+  ],
+  "realms":[
+  {
+  "_id":"5e82a7cd281d6602b698b483",
+  "title":"Christian Conventions of WA Inc",
+  "color":"#7f12b3",
+  "bgColor":"#e7b3ff",
+  "slug":"christian-conventions-of-wa-inc",
+  "_type":"realm",
+  }
+  ],
+  "policies":[
+  ],
+  "developmentMode":false,
+  "tags":[
+  ],
+  "actions":[
+  {
+  "conditions":[
+  ],
+  "type":"populate",
+  "_id":"61ffe7157839ef01ee82f61a",
+  "data":{
+  "keys":[
+  "item",
+  ],
+  "populateSelect":[
+  "title",
+  ]
+  }
+  },
+  {
+  "conditions":[
+  ],
+  "type":"email",
+  "_id":"61ffe3c2984cff001185fb60",
+  "data":{
+  "keys":[
+  ],
+  "contacts":[
+  {
+  "_id":"5e97e0806a9f734dcdc940f1",
+  "owners":[
+  ],
+  "managedOwners":[
+  ],
+  "realms":[
+  "5e82a7cd281d6602b698b484",
+  "6088c1cb87f82418764b7114",
+  "5e97abd48beea3051136186f",
+  "5e82a7cd281d6602b698b482",
+  "5e82a7cd281d6602b698b486",
+  "5e82a7ce281d6602b698b488",
+  "5e82a7cd281d6602b698b485",
+  "5e82a7ce281d6602b698b489",
+  "5e82a7cd281d6602b698b483",
+  "608a565b6eb42c090022c3fd",
+  "608a56b56eb42c090022d259",
+  "608a570bd9e05730879ce9c2",
+  "61f546264d66c70018d73006",
+  "606ecb8ec9c89661558d0bc1",
+  "6215e2e8d7cc7c001956c492",
+  "5e9d1bf79b953262c33e187f",
+  ],
+  "tags":[
+  ],
+  "_type":"contact",
+  "data":{
+  "futureContact":"N",
+  "import":{
+  "Name for sorting":"Rae, Samuel",
+  "Surname":"Rae",
+  "First name":"Samuel",
+  "Nametag":"Sam Rae",
+  "Category":"0",
+  "Future contact":"N",
+  "Pending":"1",
+  "Share?":"n",
+  "Email":"samrae@gmail.com",
+  "Email status":"0",
+  "Wrong":"0",
+  "Year of birth":"0",
+  "Last update when":"16/07/15 17:55",
+  "Last update who":"Teamlist web user",
+  "Record #":"158980",
+  "Member of":"pmc2015",
+  "index":9945,
+  "Sex":"M",
+  "Church denom name":"Baptist",
+  "Church name":"Atwell Community Church",
+  "Phone(m)":"043976319",
+  "Street":"10 Radiance Link",
+  "Suburb":"Atwell",
+  "State":"WA",
+  "Postcode":"6164",
+  "DOB":"19/05/1982",
+  "Info":"St Matthew's Uni Church",
+  "Prefname":"Sam",
+  }
+  },
+  "account":"5e82a7cd281d6602b698b481",
+  "title":"Sam Rae",
+  }
+  ],
+  "teams":[
+  ],
+  "emailTemplate":null,
+  "title":"Reaction error",
+  "htmlBody":"<% const input = get('input'); %> <h3>There has been an error in a Reaction in Fluro.</h3> <h4>Reaction:</h4> <p><%= input.item.title %></p> <h4>Error:</h4> <p><%= input.message %></p> <p><%= input.data.error.errorMessage %></p> <h4>Input:</h4> <pre><%= JSON.stringify(input,null,2) %></pre> ",
+  },
+  "deactivate":false,
+  },
+  {
+  "conditions":[
+  ],
+  "type":"stop",
+  "_id":"61ffe393e7912201934ee8e5",
+  }
+  ],
+  "permissionSets":[
+  {
+  "realms":[
+  {
+  "_id":"5e82a7cd281d6602b698b483",
+  "status":"active",
+  "title":"Christian Conventions of WA Inc",
+  "color":"#7f12b3",
+  "bgColor":"#e7b3ff",
+  "created":"2020-03-31T02:15:41.877Z",
+  "updated":"2020-03-31T02:15:41.912Z",
+  "slug":"christian-conventions-of-wa-inc",
+  "_type":"realm",
+  }
+  ],
+  "roles":[
+  {
+  "_id":"57f4640c461bb7401a858f77",
+  "title":"Full Access",
+  "_type":"role",
+  "realms":[
+  "54ebd2ef3a6e88a31bb68640",
+  ],
+  "status":"active",
+  "updated":"2021-02-24T06:19:11.856Z",
+  "created":"2016-10-05T02:23:08.750Z",
+  "firstLine":"Grants access to Create, Edit, View and Delete almost every type of content in the system",
+  }
+  ]
+  }
+  ],
+  "title":"Reaction error reporting",
+  "tests":[
+  {
+  "_id":"61ffe393e7912201934ee8e6",
+  "title":"Reaction error",
+  "json":"{ "trigger": "reaction.error", "data": { "error": { "type": "EvaluationError", "data": {}, "message": "Could not evaluate condition" }, "actionIndex": 5 }, "item": { "_id": "61f7c2afd6934a0011d8a8d0", "owners": [ "5eb14f76f4e2c15ffb9bf805" ], "managedOwners": [ "5eb14f10ff872a540dbbbe16" ], "realms": [ "5e82a7cd281d6602b698b483" ], "title": "Update Contact's church from Detail Sheet", "author": "5eb14f76f4e2c15ffb9bf805", "managedAuthor": "5eb14f10ff872a540dbbbe16", "_type": "reaction" } }",
+  "testEmail":"sam@stalbans.org.au",
+  },
+  {
+  "_id":"61ffe7157839ef01ee82f61e",
+  "title":"Update Contact's church from Detail Sheet error",
+  "json":"{ "trigger": "reaction.error", "data": { "error": { "type": "Error", "data": { "errorType": "ReferenceError", "errorMessage": "adfasdfadf is not defined", "trace": [ "ReferenceError: adfasdfadf is not defined", " at module.exports (./index.js:21:9)", " at Object.base.apply (/var/task/node_modules/vm2/lib/contextify.js:228:34)", " at Runtime.exports.handler (/var/task/index.js:118:12)", " at Runtime.handleOnce (/var/runtime/Runtime.js:66:25)" ] } }, "actionIndex": 0, "trigger": { "account": "5e82a7cd281d6602b698b481", "user": { "_id": "5eff0aa041a86b0cfbe961c5", "accountType": "application" }, "item": "61ffda42e7912201934ee80a", "data": { "_type": "interaction", "definition": "newChurchSetupTest", "submittedData": { "title": "New church setup test", "data": { "contact": [ "619ca4884de7ec000f03a8af" ] }, "realms": [ "61f546264d66c70018d73006" ], "rawData": { "contact": [ { "details": { "churchDetails": { "data": { "doyouattendachurch": "yes", "churchAttending": { "_id": "6183a592ff54a70c8879706c", "status": "active", "realms": [ "5e82a7cd281d6602b698b483", "6183a592ff54a70c8879706e" ], "_type": "team", "title": "Test 2 Church", "definition": "church", "created": "2021-11-04T09:19:14.017Z", "updated": "2022-02-06T10:40:36.585Z", "slug": "test-2-church-ges5sptkp", "firstLine": "Another test church", "value": "6183a592ff54a70c8879706c" } } } }, "firstName": "Test", "lastName": "Person", "gender": "male", "dob": "1982-05-19T00:00:00.000Z", "email": "samrae+test@gmail.com", "phoneNumber": "0439769319" } ] }, "connectionData": { "ip": { "clientIp": "159.196.133.245", "clientIpRoutable": true } }, "applicationAuthor": "5eff0aa041a86b0cfbe961c5", "account": "5e82a7cd281d6602b698b481", "primaryEmail": "samrae+test@gmail.com", "contact": null, "contacts": [ "619ca4884de7ec000f03a8af" ], "attemptLog": "61ffda3fe7912201934ee804", "mentions": [], "hashtags": [], "_type": "interaction", "definition": "newChurchSetupTest" } }, "key": "content.create", "trigger": "content.create", "message": "Created New church setup test", "model": "interaction", "testEmail": "sam@stalbans.org.au" } }, "item": { "_id": "61f7c2afd6934a0011d8a8d0", "owners": [ "5eb14f76f4e2c15ffb9bf805" ], "managedOwners": [ "5eb14f10ff872a540dbbbe16" ], "realms": [ "5e82a7cd281d6602b698b483" ], "title": "Update Contact's church from Detail Sheet", "author": "5eb14f76f4e2c15ffb9bf805", "managedAuthor": "5eb14f10ff872a540dbbbe16", "_type": "reaction" } }",
+  "testEmail":"sam@stalbans.org.au",
+  }
+  ],
+  "account":{
+  "_id":"5e82a7cd281d6602b698b481",
+  "status":"active",
+  "title":"CCOWA",
+  "countryCode":"AU",
+  "timezone":"Australia/Perth",
+  },
+  "author":{
+  "_id":"5eb14f76f4e2c15ffb9bf805",
+  "firstName":"Sam",
+  "lastName":"Rae",
+  "name":"Sam Rae",
+  "_type":"user",
+  },
+  "managedAuthor":{
+  "_id":"5eb14f10ff872a540dbbbe16",
+  "_type":"persona",
+  "firstName":"Sam",
+  "title":"Sam Rae",
+  "lastName":"Rae",
+  },
+  "_type":"reaction",
+  "updatedBy":"Sam Rae",
+  "created":"2022-02-06T15:04:51.372Z",
+  "updated":"2022-04-02T04:38:43.588Z",
+  "apikey":"$2a$10$HykIUi2jEqhy93Z9lAKWQu3WSX1niDncChwwcgXCtMlZAluIIc4D.",
+  "data":{
+  },
+  "statDates":{
+  }
+  }
