@@ -6,12 +6,8 @@ Extract data we need
 const interactionRealms = input.item.realms;
 const contacts = input.data.submittedData.data.contact;
 
-// Clear input
-input = {};
-
 // Replace input with only the data we need
-input.interactionRealms = interactionRealms;
-input.contacts = contacts;
+input = { interactionRealms, contacts };
 
 // Finish the action and send the input to the next action
 return done(null, input);

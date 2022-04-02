@@ -3,8 +3,11 @@ Add Contact to Realm
 */
 
 // Load packages
-const _ = require('lodash');
+// const _ = require('lodash');
 const async = require('async');
+
+// Get input data needed
+const { interactionRealms, contacts } = input;
 
 // Set up request headers
 const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -12,13 +15,6 @@ const headers = { 'Content-Type': 'application/json; charset=utf-8' };
 // Set up results structures to return info to the next step
 const result = {};
 const successfulContacts = [];
-
-// Get input data needed
-const interactionRealms = _.get(input, 'interactionRealms');
-const contacts = _.get(input, 'contacts');
-
-// Run the async functions
-return async.forEachOfSeries(contacts, updateRealms, callback);
 
 // Function to execute on each contact
 function updateRealms(contact, index, next) {
@@ -30,7 +26,7 @@ function updateRealms(contact, index, next) {
     };
 
     $fluro.api.put(`/content/contact/${contact._id}`, body, headers)
-        .then((res) => {
+        .then(() => {
             successfulContacts.push(contact._id);
             next();
         })
@@ -49,3 +45,6 @@ function callback(err) {
     input.result = result;
     return done(null, input);
 }
+
+// Run the async functions
+return async.forEachOfSeries(contacts, updateRealms, callback);

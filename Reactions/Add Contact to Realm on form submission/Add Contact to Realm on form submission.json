@@ -1,183 +1,200 @@
 {
-  "_id": "60ed24a2309bbd3d36a47efb",
-  "apikey_unique": {
-    "type": "Point",
-    "coordinates": [
-      0,
-      0
-    ]
+  "_id":"60ed24a2309bbd3d36a47efb",
+  "apikey_unique":{
+  "type":"Point",
+  "coordinates":[
+  0,
+  0,
+  ]
   },
-  "owners": [
-    {
-      "_id": "5eb14f76f4e2c15ffb9bf805",
-      "firstName": "Sam",
-      "lastName": "Rae",
-      "name": "Sam Rae",
-      "_type": "user"
-    }
+  "owners":[
+  {
+  "_id":"5eb14f76f4e2c15ffb9bf805",
+  "firstName":"Sam",
+  "lastName":"Rae",
+  "name":"Sam Rae",
+  "_type":"user",
+  }
   ],
-  "managedOwners": [
-    {
-      "_id": "5eb14f10ff872a540dbbbe16",
-      "_type": "persona",
-      "firstName": "Sam",
-      "title": "Sam Rae",
-      "lastName": "Rae"
-    }
+  "managedOwners":[
+  {
+  "_id":"5eb14f10ff872a540dbbbe16",
+  "_type":"persona",
+  "firstName":"Sam",
+  "title":"Sam Rae",
+  "lastName":"Rae",
+  }
   ],
-  "status": "active",
-  "hashtags": [],
-  "_references": [],
-  "mentions": [],
-  "keywords": [
-    "christian conventions of wa inc"
+  "status":"active",
+  "hashtags":[
   ],
-  "privacy": "secure",
-  "triggers": [
-    "content.create"
+  "_references":[
   ],
-  "conditions": [
-    "input.item._type == 'interaction'"
+  "mentions":[
   ],
-  "contacts": [],
-  "teams": [],
-  "integrations": [],
-  "items": [],
-  "styles": [],
-  "realms": [
-    {
-      "_id": "5e82a7cd281d6602b698b483",
-      "title": "Christian Conventions of WA Inc",
-      "color": "#7f12b3",
-      "bgColor": "#e7b3ff",
-      "slug": "christian-conventions-of-wa-inc",
-      "_type": "realm"
-    }
+  "keywords":[
+  "christian conventions of wa inc",
   ],
-  "policies": [],
-  "developmentMode": false,
-  "tags": [],
-  "actions": [
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "61f4e7a25b9b1d0011e8ef8f",
-      "script": "/* \n\nThis Reaction monitors all form submissions (Interactions)\nand adds Contacts who fill out forms to the Realm of whatever\nforms they fill out.\n\nFor example, someone registers for PWC. This Reaction will\nadd that person to the PWC Realm.\n\nThis is needed because Fluro does not automatically add \n*existing* contacts to the Realms of forms when they fill \nthem out.\n\n*/\n\nreturn done(null, input);",
-      "deactivate": false
-    },
-    {
-      "conditions": [],
-      "type": "populate",
-      "_id": "61b16f3893f1190a2c5b7811",
-      "data": {
-        "keys": [
-          "item",
-          "data.submittedData.data.contact"
-        ],
-        "populateSelect": []
-      },
-      "deactivate": false
-    },
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "61a4ca045c68ba000e5b9753",
-      "script": "/*\nExtract data we need\n*/\n\n// Get data from input\nconst interactionRealms = input.item.realms;\nconst contacts = input.data.submittedData.data.contact;\n\n// Clear input\ninput = {};\n\n// Replace input with only the data we need\ninput.interactionRealms = interactionRealms;\ninput.contacts = contacts;\n\n// Finish the action and send the input to the next action\nreturn done(null, input);",
-      "deactivate": false
-    },
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "61b06936ce49290013588059",
-      "script": "/*\nAdd Contact to Realm\n*/\n\n// Load packages\nconst _ = require('lodash');\nconst async = require('async');\n\n// Set up request headers\nconst headers = { 'Content-Type': 'application/json; charset=utf-8' };\n\n// Set up results structures to return info to the next step\nconst result = {};\nconst successfulContacts = [];\n\n// Get input data needed\nconst interactionRealms = _.get(input, 'interactionRealms');\nconst contacts = _.get(input, 'contacts');\n\n// Run the async functions\nreturn async.forEachOfSeries(contacts, updateRealms, callback);\n\n// Function to execute on each contact\nfunction updateRealms(contact, index, next) {\n    const contactRealms = contact.realms;\n    const newRealms = contactRealms.concat(interactionRealms);\n\n    const body = {\n        realms: newRealms\n    };\n\n    $fluro.api.put(`/content/contact/${contact._id}`, body, headers)\n        .then((res) =&gt; {\n            successfulContacts.push(contact._id);\n            next();\n        })\n        .catch((err) =&gt; next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction callback(err) {\n    if (err) {\n        const errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, 'STOP');\n    }\n    // Return results\n    result.successfulContacts = successfulContacts;\n\n    input.result = result;\n    return done(null, input);\n}",
-      "deactivate": false
-    },
-    {
-      "conditions": [],
-      "type": "stop",
-      "_id": "61a4ca045c68ba000e5b9755",
-      "deactivate": false
-    }
+  "privacy":"secure",
+  "triggers":[
+  "content.create",
   ],
-  "permissionSets": [
-    {
-      "realms": [
-        {
-          "_id": "5e82a7cd281d6602b698b483",
-          "status": "active",
-          "title": "Christian Conventions of WA Inc",
-          "color": "#7f12b3",
-          "bgColor": "#e7b3ff",
-          "created": "2020-03-31T02:15:41.877Z",
-          "updated": "2020-03-31T02:15:41.912Z",
-          "slug": "christian-conventions-of-wa-inc",
-          "_type": "realm"
-        }
-      ],
-      "roles": [
-        {
-          "_id": "57f4640c461bb7401a858f77",
-          "title": "Full Access",
-          "_type": "role",
-          "realms": [
-            "54ebd2ef3a6e88a31bb68640"
-          ],
-          "status": "active",
-          "updated": "2021-02-24T06:19:11.856Z",
-          "created": "2016-10-05T02:23:08.750Z",
-          "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system"
-        }
-      ]
-    }
+  "conditions":[
+  "input.item._type == 'interaction'",
   ],
-  "title": "Add Contact to Realm on form submission",
-  "account": {
-    "_id": "5e82a7cd281d6602b698b481",
-    "status": "active",
-    "title": "CCOWA",
-    "countryCode": "AU",
-    "timezone": "Australia/Perth"
+  "contacts":[
+  ],
+  "teams":[
+  ],
+  "integrations":[
+  ],
+  "items":[
+  ],
+  "styles":[
+  ],
+  "realms":[
+  {
+  "_id":"5e82a7cd281d6602b698b483",
+  "title":"Christian Conventions of WA Inc",
+  "color":"#7f12b3",
+  "bgColor":"#e7b3ff",
+  "slug":"christian-conventions-of-wa-inc",
+  "_type":"realm",
+  }
+  ],
+  "policies":[
+  ],
+  "developmentMode":false,
+  "tags":[
+  ],
+  "actions":[
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"61f4e7a25b9b1d0011e8ef8f",
+  "script":"/* This Reaction monitors all form submissions (Interactions) and adds Contacts who fill out forms to the Realm of whatever forms they fill out. For example, someone registers for PWC. This Reaction will add that person to the PWC Realm. This is needed because Fluro does not automatically add *existing* contacts to the Realms of forms when they fill them out. */ return done(null, input);",
+  "deactivate":false,
   },
-  "_type": "reaction",
-  "author": {
-    "_id": "5eb14f76f4e2c15ffb9bf805",
-    "firstName": "Sam",
-    "lastName": "Rae",
-    "name": "Sam Rae",
-    "_type": "user"
-  },
-  "managedAuthor": {
-    "_id": "5eb14f10ff872a540dbbbe16",
-    "_type": "persona",
-    "firstName": "Sam",
-    "title": "Sam Rae",
-    "lastName": "Rae"
-  },
-  "updatedBy": "Sam Rae",
-  "created": "2021-07-13T05:29:06.599Z",
-  "updated": "2022-03-29T11:17:55.125Z",
-  "tests": [
-    {
-      "_id": "61b16f3893f1190a2c5b7818",
-      "title": "Actual form submission",
-      "json": "{\n  \"account\": \"5e82a7cd281d6602b698b481\",\n  \"user\": {\n    \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n    \"accountType\": \"application\"\n  },\n  \"item\": \"61b16a24c33b6e04cca97679\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\",\n    \"submittedData\": {\n      \"title\": \"New church setup test\",\n      \"data\": {\n        \"contact\": [\n          \"619ca4884de7ec000f03a8af\"\n        ]\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b483\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"doyouattendachurch\": \"no\"\n                }\n              }\n            },\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"gender\": \"male\",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"email\": \"samrae+test@gmail.com\",\n            \"phoneNumber\": \"0439769319\"\n          }\n        ]\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"203.59.233.14\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"primaryEmail\": \"samrae+test@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"619ca4884de7ec000f03a8af\"\n      ],\n      \"attemptLog\": \"61b16a22c33b6e04cca97673\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"newChurchSetupTest\"\n    }\n  },\n  \"key\": \"content.create\",\n  \"trigger\": \"content.create\",\n  \"message\": \"Created New church setup test\",\n  \"model\": \"interaction\"\n}",
-      "testEmail": "sam@stalbans.org.au"
-    },
-    {
-      "_id": "61ee59b0c5e1d4063a7c0814",
-      "title": "Test  (New church setup test)",
-      "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\",\n    \"submittedData\": {\n      \"title\": \"New church setup test\",\n      \"data\": {\n        \"contact\": [\n          \"619ca4884de7ec000f03a8af\",\n          \"619ca6d24de7ec000f03a94e\"\n        ]\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b483\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"doyouattendachurch\": \"yes\",\n                  \"churchAttending\": {\n                    \"_id\": \"5e9d1bf49b953262c33e1865\",\n                    \"status\": \"active\",\n                    \"realms\": [\n                      \"5e9d1bf79b953262c33e187f\",\n                      \"5e82a7cd281d6602b698b483\"\n                    ],\n                    \"title\": \"St Alban's Anglican Church, Highgate\",\n                    \"_type\": \"team\",\n                    \"created\": \"2020-04-20T03:50:12.925Z\",\n                    \"updated\": \"2021-10-29T02:02:08.558Z\",\n                    \"slug\": \"st-albans-anglican-church-sx8slca5xw\",\n                    \"definition\": \"church\",\n                    \"value\": \"5e9d1bf49b953262c33e1865\"\n                  }\n                }\n              }\n            },\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"gender\": \"male\",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"email\": \"samrae+test@gmail.com\",\n            \"phoneNumber\": \"0439769319\"\n          },\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"doyouattendachurch\": \"no\"\n                }\n              }\n            },\n            \"firstName\": \"Test 2\",\n            \"lastName\": \"Person\",\n            \"gender\": \"female\",\n            \"dob\": \"2011-01-01T00:00:00.000Z\",\n            \"email\": \"person@test.com\",\n            \"phoneNumber\": \"0439769319\"\n          }\n        ]\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"primaryEmail\": \"samrae+test@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"619ca4884de7ec000f03a8af\",\n        \"619ca6d24de7ec000f03a94e\"\n      ],\n      \"attemptLog\": \"61ee590ac5e1d4063a7c07db\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"newChurchSetupTest\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61ee590fc5e1d4063a7c07e5\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"New church setup test\",\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\"\n  }\n}",
-      "testEmail": "sam@stalbans.org.au"
-    }
+  {
+  "conditions":[
   ],
-  "apikey": "$2a$10$UszS4aG7HhzwuMx0NFovVet3CdczYDHGIOh1DBXExrDwK2OUihGpe",
-  "_sid": 123456,
-  "statDates": {
-    "view": "2021-11-23T08:16:26.567Z"
+  "type":"populate",
+  "_id":"61b16f3893f1190a2c5b7811",
+  "data":{
+  "keys":[
+  "item",
+  "data.submittedData.data.contact",
+  ],
+  "populateSelect":[
+  ]
   },
-  "stats": {
-    "view": 1
+  "deactivate":false,
   },
-  "data": {},
-  "deactivated": false
-}
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"61a4ca045c68ba000e5b9753",
+  "script":"/* Extract data we need */ // Get data from input const interactionRealms = input.item.realms; const contacts = input.data.submittedData.data.contact; // Replace input with only the data we need input = { interactionRealms, contacts }; // Finish the action and send the input to the next action return done(null, input);",
+  "deactivate":false,
+  },
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"61b06936ce49290013588059",
+  "script":"/* Add Contact to Realm */ // Load packages // const _ = require('lodash'); const async = require('async'); // Get input data needed const { interactionRealms, contacts } = input; // Set up request headers const headers = { 'Content-Type': 'application/json; charset=utf-8' }; // Set up results structures to return info to the next step const result = {}; const successfulContacts = []; // Function to execute on each contact function updateRealms(contact, index, next) { const contactRealms = contact.realms; const newRealms = contactRealms.concat(interactionRealms); const body = { realms: newRealms }; $fluro.api.put(`/content/contact/${contact._id}`, body, headers) .then(() => { successfulContacts.push(contact._id); next(); }) .catch((err) => next(err)); } // Callback function — after all iterations are finished function callback(err) { if (err) { const errorMessage = $fluro.utils.errorMessage(err); return done(errorMessage, 'STOP'); } // Return results result.successfulContacts = successfulContacts; input.result = result; return done(null, input); } // Run the async functions return async.forEachOfSeries(contacts, updateRealms, callback);",
+  "deactivate":false,
+  },
+  {
+  "conditions":[
+  ],
+  "type":"stop",
+  "_id":"61a4ca045c68ba000e5b9755",
+  "deactivate":false,
+  }
+  ],
+  "permissionSets":[
+  {
+  "realms":[
+  {
+  "_id":"5e82a7cd281d6602b698b483",
+  "status":"active",
+  "title":"Christian Conventions of WA Inc",
+  "color":"#7f12b3",
+  "bgColor":"#e7b3ff",
+  "created":"2020-03-31T02:15:41.877Z",
+  "updated":"2020-03-31T02:15:41.912Z",
+  "slug":"christian-conventions-of-wa-inc",
+  "_type":"realm",
+  }
+  ],
+  "roles":[
+  {
+  "_id":"57f4640c461bb7401a858f77",
+  "title":"Full Access",
+  "_type":"role",
+  "realms":[
+  "54ebd2ef3a6e88a31bb68640",
+  ],
+  "status":"active",
+  "updated":"2021-02-24T06:19:11.856Z",
+  "created":"2016-10-05T02:23:08.750Z",
+  "firstLine":"Grants access to Create, Edit, View and Delete almost every type of content in the system",
+  }
+  ]
+  }
+  ],
+  "title":"Add Contact to Realm on form submission",
+  "account":{
+  "_id":"5e82a7cd281d6602b698b481",
+  "status":"active",
+  "title":"CCOWA",
+  "countryCode":"AU",
+  "timezone":"Australia/Perth",
+  },
+  "_type":"reaction",
+  "author":{
+  "_id":"5eb14f76f4e2c15ffb9bf805",
+  "firstName":"Sam",
+  "lastName":"Rae",
+  "name":"Sam Rae",
+  "_type":"user",
+  },
+  "managedAuthor":{
+  "_id":"5eb14f10ff872a540dbbbe16",
+  "_type":"persona",
+  "firstName":"Sam",
+  "title":"Sam Rae",
+  "lastName":"Rae",
+  },
+  "updatedBy":"Sam Rae",
+  "created":"2021-07-13T05:29:06.599Z",
+  "updated":"2022-04-02T04:36:11.394Z",
+  "tests":[
+  {
+  "_id":"61b16f3893f1190a2c5b7818",
+  "title":"Actual form submission",
+  "json":"{ "account": "5e82a7cd281d6602b698b481", "user": { "_id": "5eff0aa041a86b0cfbe961c5", "accountType": "application" }, "item": "61b16a24c33b6e04cca97679", "data": { "_type": "interaction", "definition": "newChurchSetupTest", "submittedData": { "title": "New church setup test", "data": { "contact": [ "619ca4884de7ec000f03a8af" ] }, "realms": [ "5e82a7cd281d6602b698b483" ], "rawData": { "contact": [ { "details": { "churchDetails": { "data": { "doyouattendachurch": "no" } } }, "firstName": "Test", "lastName": "Person", "gender": "male", "dob": "1982-05-19T00:00:00.000Z", "email": "samrae+test@gmail.com", "phoneNumber": "0439769319" } ] }, "connectionData": { "ip": { "clientIp": "203.59.233.14", "clientIpRoutable": true } }, "applicationAuthor": "5eff0aa041a86b0cfbe961c5", "account": "5e82a7cd281d6602b698b481", "primaryEmail": "samrae+test@gmail.com", "contact": null, "contacts": [ "619ca4884de7ec000f03a8af" ], "attemptLog": "61b16a22c33b6e04cca97673", "mentions": [], "hashtags": [], "_type": "interaction", "definition": "newChurchSetupTest" } }, "key": "content.create", "trigger": "content.create", "message": "Created New church setup test", "model": "interaction" }",
+  "testEmail":"sam@stalbans.org.au",
+  },
+  {
+  "_id":"61ee59b0c5e1d4063a7c0814",
+  "title":"Test (New church setup test)",
+  "json":"{ "trigger": "content.create", "data": { "_type": "interaction", "definition": "newChurchSetupTest", "submittedData": { "title": "New church setup test", "data": { "contact": [ "619ca4884de7ec000f03a8af", "619ca6d24de7ec000f03a94e" ] }, "realms": [ "5e82a7cd281d6602b698b483" ], "rawData": { "contact": [ { "details": { "churchDetails": { "data": { "doyouattendachurch": "yes", "churchAttending": { "_id": "5e9d1bf49b953262c33e1865", "status": "active", "realms": [ "5e9d1bf79b953262c33e187f", "5e82a7cd281d6602b698b483" ], "title": "St Alban's Anglican Church, Highgate", "_type": "team", "created": "2020-04-20T03:50:12.925Z", "updated": "2021-10-29T02:02:08.558Z", "slug": "st-albans-anglican-church-sx8slca5xw", "definition": "church", "value": "5e9d1bf49b953262c33e1865" } } } }, "firstName": "Test", "lastName": "Person", "gender": "male", "dob": "1982-05-19T00:00:00.000Z", "email": "samrae+test@gmail.com", "phoneNumber": "0439769319" }, { "details": { "churchDetails": { "data": { "doyouattendachurch": "no" } } }, "firstName": "Test 2", "lastName": "Person", "gender": "female", "dob": "2011-01-01T00:00:00.000Z", "email": "person@test.com", "phoneNumber": "0439769319" } ] }, "connectionData": { "ip": { "clientIp": "159.196.133.245", "clientIpRoutable": true } }, "applicationAuthor": "5eff0aa041a86b0cfbe961c5", "account": "5e82a7cd281d6602b698b481", "primaryEmail": "samrae+test@gmail.com", "contact": null, "contacts": [ "619ca4884de7ec000f03a8af", "619ca6d24de7ec000f03a94e" ], "attemptLog": "61ee590ac5e1d4063a7c07db", "mentions": [], "hashtags": [], "_type": "interaction", "definition": "newChurchSetupTest" } }, "item": { "_id": "61ee590fc5e1d4063a7c07e5", "owners": [], "managedOwners": [], "realms": [ "5e82a7cd281d6602b698b483" ], "title": "New church setup test", "_type": "interaction", "definition": "newChurchSetupTest" } }",
+  "testEmail":"sam@stalbans.org.au",
+  }
+  ],
+  "apikey":"$2a$10$UszS4aG7HhzwuMx0NFovVet3CdczYDHGIOh1DBXExrDwK2OUihGpe",
+  "_sid":123456,
+  "statDates":{
+  "view":"2021-11-23T08:16:26.567Z",
+  },
+  "stats":{
+  "view":1,
+  },
+  "data":{
+  },
+  "deactivated":false,
+  }
