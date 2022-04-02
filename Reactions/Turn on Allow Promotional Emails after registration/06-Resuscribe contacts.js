@@ -3,7 +3,7 @@ Re-subscribe people to Allow Promotional Emails
 */
 
 // Get input into variables
-const contacts = input.contacts;
+const { contacts } = input;
 const emailsToSubscribe = [];
 
 // Set up request headers

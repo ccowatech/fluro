@@ -4,7 +4,7 @@
     "type": "Point",
     "coordinates": [
       0,
-      0
+      0,
     ]
   },
   "owners": [
@@ -13,7 +13,7 @@
       "firstName": "Sam",
       "lastName": "Rae",
       "name": "Sam Rae",
-      "_type": "user"
+      "_type": "user",
     }
   ],
   "managedOwners": [
@@ -22,7 +22,7 @@
       "_type": "persona",
       "firstName": "Sam",
       "title": "Sam Rae",
-      "lastName": "Rae"
+      "lastName": "Rae",
     }
   ],
   "status": "active",
@@ -30,14 +30,14 @@
   "_references": [],
   "mentions": [],
   "keywords": [
-    "christian conventions of wa inc"
+    "christian conventions of wa inc",
   ],
   "privacy": "secure",
   "triggers": [
-    "content.create"
+    "content.create",
   ],
   "conditions": [
-    "input.item._type == 'interaction'"
+    "input.item._type == 'interaction'",
   ],
   "contacts": [],
   "teams": [],
@@ -51,7 +51,7 @@
       "color": "#7f12b3",
       "bgColor": "#e7b3ff",
       "slug": "christian-conventions-of-wa-inc",
-      "_type": "realm"
+      "_type": "realm",
     }
   ],
   "policies": [],
@@ -62,7 +62,7 @@
       "conditions": [],
       "type": "code",
       "_id": "620cc5ed7ccefc0016d38a5b",
-      "script": "/*\nThis Reaction re-subscribes all contacts to \nAllow Promotional Emails when they submit a form.\n*/\n\nreturn done(null, input);"
+      "script": "/* This Reaction re-subscribes all contacts to Allow Promotional Emails when they submit a form. */ return done(null, input);",
     },
     {
       "conditions": [],
@@ -70,7 +70,7 @@
       "_id": "620cc5ed7ccefc0016d38a5c",
       "data": {
         "keys": [
-          "item"
+          "item",
         ],
         "populateSelect": []
       }
@@ -79,15 +79,15 @@
       "conditions": [],
       "type": "code",
       "_id": "61a4ca045c68ba000e5b9753",
-      "script": "/*\nFormat input based on what it is.\n*/\n\n// Create variables\nvar inputType;\nvar contacts;\n\n// Check that this is an interaction with contacts attached, then check for trigger type\nif (input.data._type == \"interaction\" &amp;&amp; input.item.hasOwnProperty(\"contacts\") &amp;&amp; input.trigger == \"content.create\") {\n    inputType = \"autoInteraction\";\n    contacts = input.item.contacts;\n} else if (input.data._type == \"interaction\" &amp;&amp; input.item.hasOwnProperty(\"contacts\") &amp;&amp; input.trigger == \"manual.spark\") {\n    inputType = \"manualInteraction\";\n    contacts = input.item.contacts;\n} else {\n    inputType = \"unknown\";\n}\n\n// Return data\ninput = {};\ninput.inputType = inputType;\ninput.contacts = contacts;\n\nreturn done(null, input);",
-      "deactivate": false
+      "script": "/* Format input based on what it is. */ // Load packages const _ = require('lodash'); // Create variables let inputType; let contacts; // Check that this is an interaction with contacts attached, then check for trigger type if (input.data._type === 'interaction' && _.has(input.item, 'contacts') && input.trigger === 'content.create') { inputType = 'autoInteraction'; contacts = input.item.contacts; } else if (input.data._type === 'interaction' && _.has(input.item, 'contacts') && input.trigger === 'manual.spark') { inputType = 'manualInteraction'; contacts = input.item.contacts; } else { inputType = 'unknown'; } // Return data input = {}; input.inputType = inputType; input.contacts = contacts; return done(null, input);",
+      "deactivate": false,
     },
     {
       "conditions": [
-        "inputType == \"unknown\""
+        "inputType == "unknown"",
       ],
       "type": "stop",
-      "_id": "620cc5ed7ccefc0016d38a5e"
+      "_id": "620cc5ed7ccefc0016d38a5e",
     },
     {
       "conditions": [],
@@ -95,11 +95,11 @@
       "_id": "620cc5ed7ccefc0016d38a5f",
       "data": {
         "keys": [
-          "contacts"
+          "contacts",
         ],
         "populateSelect": [
           "id",
-          "emails"
+          "emails",
         ]
       }
     },
@@ -107,14 +107,14 @@
       "conditions": [],
       "type": "code",
       "_id": "61b06936ce49290013588059",
-      "script": "/*\nRe-subscribe people to Allow Promotional Emails\n*/\n\n// Get input into variables\nconst contacts = input.contacts;\nconst emailsToSubscribe = [];\n\n// Set up request headers\nconst headers = { 'Content-Type': 'application/json; charset=utf-8' };\n\n// Set up results objects\nconst results = [];\n\n// Build array of emails to process.\n// All the email addresses for a contact must be resubscribed\n// for the Allow Promotional Emails setting to turn on.\nfor (let i = 0; i &lt; contacts.length; i += 1) {\n    for (let j = 0; j &lt; contacts[i].emails.length; j += 1) {\n        emailsToSubscribe.push(contacts[i].emails[j]);\n    }\n}\n\nconst body = { emails: emailsToSubscribe };\n\nreturn $fluro.api.post('/mailout/resubscribe', body, headers)\n    .then((res) =&gt; {\n        results.push(res.data);\n\n        // Return results\n        input.results = results;\n        return done(null, input);\n    }, done);",
-      "deactivate": false
+      "script": "/* Re-subscribe people to Allow Promotional Emails */ // Get input into variables const { contacts } = input; const emailsToSubscribe = []; // Set up request headers const headers = { 'Content-Type': 'application/json; charset=utf-8' }; // Set up results objects const results = []; // Build array of emails to process. // All the email addresses for a contact must be resubscribed // for the Allow Promotional Emails setting to turn on. for (let i = 0; i < contacts.length; i += 1) { for (let j = 0; j < contacts[i].emails.length; j += 1) { emailsToSubscribe.push(contacts[i].emails[j]); } } const body = { emails: emailsToSubscribe }; return $fluro.api.post('/mailout/resubscribe', body, headers) .then((res) => { results.push(res.data); // Return results input.results = results; return done(null, input); }, done);",
+      "deactivate": false,
     },
     {
       "conditions": [],
       "type": "stop",
       "_id": "61a4ca045c68ba000e5b9755",
-      "deactivate": false
+      "deactivate": false,
     }
   ],
   "permissionSets": [
@@ -129,7 +129,7 @@
           "created": "2020-03-31T02:15:41.877Z",
           "updated": "2020-03-31T02:15:41.912Z",
           "slug": "christian-conventions-of-wa-inc",
-          "_type": "realm"
+          "_type": "realm",
         }
       ],
       "roles": [
@@ -138,12 +138,12 @@
           "title": "Full Access",
           "_type": "role",
           "realms": [
-            "54ebd2ef3a6e88a31bb68640"
+            "54ebd2ef3a6e88a31bb68640",
           ],
           "status": "active",
           "updated": "2021-02-24T06:19:11.856Z",
           "created": "2016-10-05T02:23:08.750Z",
-          "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system"
+          "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system",
         }
       ]
     }
@@ -154,26 +154,26 @@
     {
       "_id": "61b16f3893f1190a2c5b7818",
       "title": "Actual form submission",
-      "json": "{\n  \"account\": \"5e82a7cd281d6602b698b481\",\n  \"user\": {\n    \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n    \"accountType\": \"application\"\n  },\n  \"item\": \"61b16a24c33b6e04cca97679\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\",\n    \"submittedData\": {\n      \"title\": \"New church setup test\",\n      \"data\": {\n        \"contact\": [\n          \"619ca4884de7ec000f03a8af\"\n        ]\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b483\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"doyouattendachurch\": \"no\"\n                }\n              }\n            },\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"gender\": \"male\",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"email\": \"samrae+test@gmail.com\",\n            \"phoneNumber\": \"0439769319\"\n          }\n        ]\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"203.59.233.14\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"primaryEmail\": \"samrae+test@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"619ca4884de7ec000f03a8af\"\n      ],\n      \"attemptLog\": \"61b16a22c33b6e04cca97673\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"newChurchSetupTest\"\n    }\n  },\n  \"key\": \"content.create\",\n  \"trigger\": \"content.create\",\n  \"message\": \"Created New church setup test\",\n  \"model\": \"interaction\"\n}",
-      "testEmail": "sam@stalbans.org.au"
+      "json": "{ "account": "5e82a7cd281d6602b698b481", "user": { "_id": "5eff0aa041a86b0cfbe961c5", "accountType": "application" }, "item": "61b16a24c33b6e04cca97679", "data": { "_type": "interaction", "definition": "newChurchSetupTest", "submittedData": { "title": "New church setup test", "data": { "contact": [ "619ca4884de7ec000f03a8af" ] }, "realms": [ "5e82a7cd281d6602b698b483" ], "rawData": { "contact": [ { "details": { "churchDetails": { "data": { "doyouattendachurch": "no" } } }, "firstName": "Test", "lastName": "Person", "gender": "male", "dob": "1982-05-19T00: 00: 00.000Z", "email": "samrae+test@gmail.com", "phoneNumber": "0439769319" } ] }, "connectionData": { "ip": { "clientIp": "203.59.233.14", "clientIpRoutable": true } }, "applicationAuthor": "5eff0aa041a86b0cfbe961c5", "account": "5e82a7cd281d6602b698b481", "primaryEmail": "samrae+test@gmail.com", "contact": null, "contacts": [ "619ca4884de7ec000f03a8af" ], "attemptLog": "61b16a22c33b6e04cca97673", "mentions": [], "hashtags": [], "_type": "interaction", "definition": "newChurchSetupTest" } }, "key": "content.create", "trigger": "content.create", "message": "Created New church setup test", "model": "interaction" }",
+      "testEmail": "sam@stalbans.org.au",
     },
     {
       "_id": "61ee5a8619caa8000d9208a7",
-      "title": "Test  (New church setup test)",
-      "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\",\n    \"submittedData\": {\n      \"title\": \"New church setup test\",\n      \"data\": {\n        \"contact\": [\n          \"619ca4884de7ec000f03a8af\",\n          \"619ca6d24de7ec000f03a94e\"\n        ]\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b483\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"doyouattendachurch\": \"yes\",\n                  \"churchAttending\": {\n                    \"_id\": \"5e9d1bf49b953262c33e1865\",\n                    \"status\": \"active\",\n                    \"realms\": [\n                      \"5e9d1bf79b953262c33e187f\",\n                      \"5e82a7cd281d6602b698b483\"\n                    ],\n                    \"title\": \"St Alban's Anglican Church, Highgate\",\n                    \"_type\": \"team\",\n                    \"created\": \"2020-04-20T03:50:12.925Z\",\n                    \"updated\": \"2021-10-29T02:02:08.558Z\",\n                    \"slug\": \"st-albans-anglican-church-sx8slca5xw\",\n                    \"definition\": \"church\",\n                    \"value\": \"5e9d1bf49b953262c33e1865\"\n                  }\n                }\n              }\n            },\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"gender\": \"male\",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"email\": \"samrae+test@gmail.com\",\n            \"phoneNumber\": \"0439769319\"\n          },\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"doyouattendachurch\": \"no\"\n                }\n              }\n            },\n            \"firstName\": \"Test 2\",\n            \"lastName\": \"Person\",\n            \"gender\": \"female\",\n            \"dob\": \"2011-01-01T00:00:00.000Z\",\n            \"email\": \"person@test.com\",\n            \"phoneNumber\": \"0439769319\"\n          }\n        ]\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"primaryEmail\": \"samrae+test@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"619ca4884de7ec000f03a8af\",\n        \"619ca6d24de7ec000f03a94e\"\n      ],\n      \"attemptLog\": \"61ee590ac5e1d4063a7c07db\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"newChurchSetupTest\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61ee590fc5e1d4063a7c07e5\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"New church setup test\",\n    \"_type\": \"interaction\",\n    \"definition\": \"newChurchSetupTest\"\n  }\n}",
-      "testEmail": "sam@stalbans.org.au"
+      "title": "Test (New church setup test)",
+      "json": "{ "trigger": "content.create", "data": { "_type": "interaction", "definition": "newChurchSetupTest", "submittedData": { "title": "New church setup test", "data": { "contact": [ "619ca4884de7ec000f03a8af", "619ca6d24de7ec000f03a94e" ] }, "realms": [ "5e82a7cd281d6602b698b483" ], "rawData": { "contact": [ { "details": { "churchDetails": { "data": { "doyouattendachurch": "yes", "churchAttending": { "_id": "5e9d1bf49b953262c33e1865", "status": "active", "realms": [ "5e9d1bf79b953262c33e187f", "5e82a7cd281d6602b698b483" ], "title": "St Alban's Anglican Church, Highgate", "_type": "team", "created": "2020-04-20T03: 50: 12.925Z", "updated": "2021-10-29T02: 02: 08.558Z", "slug": "st-albans-anglican-church-sx8slca5xw", "definition": "church", "value": "5e9d1bf49b953262c33e1865" } } } }, "firstName": "Test", "lastName": "Person", "gender": "male", "dob": "1982-05-19T00: 00: 00.000Z", "email": "samrae+test@gmail.com", "phoneNumber": "0439769319" }, { "details": { "churchDetails": { "data": { "doyouattendachurch": "no" } } }, "firstName": "Test 2", "lastName": "Person", "gender": "female", "dob": "2011-01-01T00: 00: 00.000Z", "email": "person@test.com", "phoneNumber": "0439769319" } ] }, "connectionData": { "ip": { "clientIp": "159.196.133.245", "clientIpRoutable": true } }, "applicationAuthor": "5eff0aa041a86b0cfbe961c5", "account": "5e82a7cd281d6602b698b481", "primaryEmail": "samrae+test@gmail.com", "contact": null, "contacts": [ "619ca4884de7ec000f03a8af", "619ca6d24de7ec000f03a94e" ], "attemptLog": "61ee590ac5e1d4063a7c07db", "mentions": [], "hashtags": [], "_type": "interaction", "definition": "newChurchSetupTest" } }, "item": { "_id": "61ee590fc5e1d4063a7c07e5", "owners": [], "managedOwners": [], "realms": [ "5e82a7cd281d6602b698b483" ], "title": "New church setup test", "_type": "interaction", "definition": "newChurchSetupTest" } }",
+      "testEmail": "sam@stalbans.org.au",
     },
     {
       "_id": "620cc5ed7ccefc0016d38a64",
       "title": "Actual input from Manual spark",
-      "json": "{\n    \"trigger\": \"manual.spark\",\n    \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"newChurchSetupTest\"\n    },\n    \"item\": {\n        \"title\": \"New church setup test\",\n        \"_type\": \"interaction\",\n        \"definition\": \"newChurchSetupTest\",\n        \"_id\": \"620ca10f66de7b0017515e9f\"\n    }\n}",
-      "testEmail": "sam@stalbans.org.au"
+      "json": "{ "trigger": "manual.spark", "data": { "_type": "interaction", "definition": "newChurchSetupTest" }, "item": { "title": "New church setup test", "_type": "interaction", "definition": "newChurchSetupTest", "_id": "620ca10f66de7b0017515e9f" } }",
+      "testEmail": "sam@stalbans.org.au",
     },
     {
       "_id": "620cc5ed7ccefc0016d38a65",
       "title": "Manual Spark with 2 contacts",
-      "json": "{\"trigger\":\"manual.spark\",\"data\":{\"_type\":\"interaction\",\"definition\":\"newChurchSetupTest\"},\"item\":{\"title\":\"New church setup test\",\"_type\":\"interaction\",\"definition\":\"newChurchSetupTest\",\"_id\":\"620addbb439c4b00171d7305\"}}",
-      "testEmail": "sam@stalbans.org.au"
+      "json": "{"trigger":"manual.spark","data":{"_type":"interaction","definition":"newChurchSetupTest"},"item":{"title":"New church setup test","_type":"interaction","definition":"newChurchSetupTest","_id":"620addbb439c4b00171d7305"}}",
+      "testEmail": "sam@stalbans.org.au",
     }
   ],
   "_sid": 123456,
@@ -183,31 +183,31 @@
     "status": "active",
     "title": "CCOWA",
     "countryCode": "AU",
-    "timezone": "Australia/Perth"
+    "timezone": "Australia/Perth",
   },
   "author": {
     "_id": "5eb14f76f4e2c15ffb9bf805",
     "firstName": "Sam",
     "lastName": "Rae",
     "name": "Sam Rae",
-    "_type": "user"
+    "_type": "user",
   },
   "managedAuthor": {
     "_id": "5eb14f10ff872a540dbbbe16",
     "_type": "persona",
     "firstName": "Sam",
     "title": "Sam Rae",
-    "lastName": "Rae"
+    "lastName": "Rae",
   },
   "updatedBy": "Sam Rae",
   "created": "2022-01-24T07:20:37.710Z",
-  "updated": "2022-03-29T12:03:32.297Z",
+  "updated": "2022-04-02T05:10:52.226Z",
   "apikey": "$2a$10$W7TEAs03C79CdEGqqWiuKe8hd2EudtD9C76JHJTm7xUEi5xlyD4T6",
   "data": {},
   "statDates": {
-    "view": "2022-01-28T17:34:15.106Z"
+    "view": "2022-01-28T17:34:15.106Z",
   },
   "stats": {
-    "view": 1
+    "view": 1,
   }
 }
