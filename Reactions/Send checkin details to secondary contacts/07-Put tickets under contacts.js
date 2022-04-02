@@ -2,9 +2,15 @@
 Put tickets under each contact
 */
 
-const interaction = input.interaction;
-const primaryContact = input.primaryContact;
-const secondaryContacts = input.secondaryContacts;
+// Load packages
+const _ = require('lodash');
+
+const {
+    interaction,
+    primaryContact,
+    secondaryContacts
+} = input;
+
 const tickets = input.tickets[0];
 
 // If no tickets, stop the Reaction
@@ -15,11 +21,11 @@ if (tickets.length < 1) {
 // Put tickets under each contact
 for (let i = 0; i < tickets.length; i += 1) {
     // If the ticket is active and there is an associated event
-    if (tickets[i].status === 'active' && tickets[i].hasOwnProperty('event')) {
+    if (tickets[i].status === 'active' && _.has(tickets[i], 'event')) {
         // If the contact is a secondary contact
-        if (secondaryContacts.hasOwnProperty(tickets[i].contact._id)) {
+        if (_.has(secondaryContacts, tickets[i].contact._id)) {
             // If the contact does not already have a ticket array, create it
-            if (!secondaryContacts[tickets[i].contact._id].hasOwnProperty('tickets')) {
+            if (!_.has(secondaryContacts[tickets[i].contact._id], 'tickets')) {
                 secondaryContacts[tickets[i].contact._id].tickets = [];
             }
 
@@ -39,10 +45,10 @@ for (let i = 0; i < tickets.length; i += 1) {
 }
 
 // Return the data
-input = {};
-
-input.interaction = interaction;
-input.primaryContact = primaryContact;
-input.secondaryContacts = secondaryContacts;
+input = {
+    interaction,
+    primaryContact,
+    secondaryContacts
+};
 
 return done(null, input);

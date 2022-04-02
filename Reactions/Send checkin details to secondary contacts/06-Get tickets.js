@@ -22,12 +22,8 @@ Options are
 /tickets/event/<EVENTID>
 */
 $fluro.api.get(`/tickets/interaction/${interactionID}`)
-    .then((res) => {
-        tickets.push(res.data);
-    })
-    .catch((err) => {
-        return done(err, 'STOP');
-    });
+    .then((res) => tickets.push(res.data))
+    .catch((err) => {return done(err, 'STOP')});
 
 // Return results
 input.tickets = tickets;

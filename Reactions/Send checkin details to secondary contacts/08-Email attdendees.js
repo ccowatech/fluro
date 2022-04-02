@@ -23,14 +23,16 @@ const interactionURL = `https://app.fluro.io/list/interaction/${interaction.defi
 // Filter out Contacts with no tickets
 const secondaryContactIDs = Object.keys(secondaryContacts);
 const secondaryContactsWithTickets = {};
+
 for (let i = 0; i < secondaryContactIDs.length; i += 1) {
-    if (secondaryContacts[secondaryContactIDs[i]].hasOwnProperty('tickets')) {
-        secondaryContactsWithTickets[secondaryContactIDs[i]] = secondaryContacts[secondaryContactIDs[i]];
+    if (_.has(secondaryContacts[secondaryContactIDs[i]], 'tickets')) {
+        secondaryContactsWithTickets[
+            secondaryContactIDs[i]
+        ] = secondaryContacts[
+            secondaryContactIDs[i]
+        ];
     }
 }
-
-// Run the async function
-return async.forEachOfSeries(secondaryContactsWithTickets, emailTicketInfo, emailTicketInfoCallback);
 
 // Function to execute on each contact
 function emailTicketInfo(contact, index, next) {
@@ -102,3 +104,10 @@ function emailTicketInfoCallback(err) {
     // Return results
     return done(null, input);
 }
+
+// Run the async function
+return async.forEachOfSeries(
+    secondaryContactsWithTickets,
+    emailTicketInfo,
+    emailTicketInfoCallback
+);

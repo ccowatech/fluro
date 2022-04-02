@@ -1,211 +1,231 @@
 {
-  "_id": "621387b3a4adca0018cd7692",
-  "apikey_unique": {
-    "type": "Point",
-    "coordinates": [
-      0,
-      0
-    ]
+  "_id":"621387b3a4adca0018cd7692",
+  "apikey_unique":{
+  "type":"Point",
+  "coordinates":[
+  0,
+  0,
+  ]
   },
-  "owners": [
-    {
-      "_id": "5eb14f76f4e2c15ffb9bf805",
-      "firstName": "Sam",
-      "lastName": "Rae",
-      "name": "Sam Rae",
-      "_type": "user"
-    }
-  ],
-  "managedOwners": [
-    {
-      "_id": "5eb14f10ff872a540dbbbe16",
-      "_type": "persona",
-      "firstName": "Sam",
-      "title": "Sam Rae",
-      "lastName": "Rae"
-    }
-  ],
-  "status": "active",
-  "hashtags": [],
-  "_references": [],
-  "mentions": [],
-  "keywords": [
-    "christian conventions of wa inc"
-  ],
-  "privacy": "secure",
-  "triggers": [
-    "content.create"
-  ],
-  "conditions": [
-    "input.item._type == 'interaction'"
-  ],
-  "contacts": [],
-  "teams": [],
-  "integrations": [],
-  "items": [],
-  "styles": [],
-  "realms": [
-    {
-      "_id": "5e82a7cd281d6602b698b483",
-      "title": "Christian Conventions of WA Inc",
-      "color": "#7f12b3",
-      "bgColor": "#e7b3ff",
-      "slug": "christian-conventions-of-wa-inc",
-      "_type": "realm"
-    }
-  ],
-  "policies": [],
-  "developmentMode": false,
-  "tags": [],
-  "actions": [
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "622e24ad1ef900015ab2e328",
-      "script": "/*\nGet the interaction ID\n*/\n\nlet inputType;\nlet interaction;\n\nif (input.trigger === 'manual.spark' &amp;&amp; input.data._type === 'interaction') {\n    inputType = 'manualInteraction';\n    interaction = input.item._id;\n\n} else if (input.trigger === 'content.create' &amp;&amp; input.data._type === 'interaction') {\n    inputType = 'autoInteraction';\n    interaction = input.item;\n\n} else {\n    inputType = 'unknown';\n}\n\ninput = {};\ninput.inputType = inputType;\ninput.interaction = interaction;\n\nreturn done(null, input);"
-    },
-    {
-      "conditions": [
-        "inputType == \"unknown\""
-      ],
-      "type": "stop",
-      "_id": "622e24ad1ef900015ab2e329"
-    },
-    {
-      "conditions": [],
-      "type": "populate",
-      "_id": "622e24ad1ef900015ab2e32a",
-      "data": {
-        "keys": [
-          "interaction"
-        ],
-        "populateSelect": []
-      }
-    },
-    {
-      "conditions": [],
-      "type": "populate",
-      "_id": "622e24ad1ef900015ab2e32b",
-      "data": {
-        "keys": [
-          "interaction.realms"
-        ],
-        "populateSelect": [
-          "title",
-          "data.shortTitle",
-          "data.registrarEmail"
-        ]
-      }
-    },
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "622e24ad1ef900015ab2e32c",
-      "script": "/*\nExtract the data we need.\n*/\n\n// Get interaction info\nconst interaction = {\n    _id: input.interaction._id,\n    definition: input.interaction.definition,\n    realm: {\n        title: input.interaction.realms[0].title,\n        shortTitle: input.interaction.realms[0].data.shortTitle,\n        email: input.interaction.realms[0].data.registrarEmail\n    }\n};\n\n// Get contact info\nlet primaryContact;\nconst secondaryContacts = {};\n\nif (!input.interaction.rawData.hasOwnProperty('contact')) {\n    // If no contacts attached to this interaction, stop the Reaction\n    return done(null, 'STOP');\n}\n\nfor (let i = 0; i &lt; input.interaction.rawData.contact.length; i += 1) {\n    if (input.interaction.rawData.contact[i].email === input.interaction.primaryEmail) {\n        primaryContact = {\n            _id: input.interaction.data.contact[i],\n            firstName: input.interaction.rawData.contact[i].firstName,\n            lastName: input.interaction.rawData.contact[i].lastName,\n            email: input.interaction.rawData.contact[i].email\n        };\n    } else {\n        secondaryContacts[input.interaction.data.contact[i]] = {\n            _id: input.interaction.data.contact[i],\n            firstName: input.interaction.rawData.contact[i].firstName,\n            lastName: input.interaction.rawData.contact[i].lastName,\n            email: input.interaction.rawData.contact[i].email\n        };\n    }\n}\n\nif (secondaryContacts.length === 0) { // No secondary contacts. This Reaction is not needed.\n    return done(null, 'STOP');\n}\n\ninput = {};\n\ninput.interaction = interaction;\ninput.primaryContact = primaryContact;\ninput.secondaryContacts = secondaryContacts;\n\nreturn done(null, input);",
-      "deactivate": false
-    },
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "621ca67897fa3e006288c52b",
-      "script": "/*\nGet tickets related to these contacts and this interaction\n*/\n\n// Load packages\nconst _ = require('lodash');\n\n// Set up results structures to return info to the next step]\nconst tickets = [];\n\n// Get input data needed\nconst interactionID = _.get(input, 'interaction._id');\n\n/*\nGET https://api.fluro.io/tickets/:connection/:connectionID\nDESCRIPTION\nReturns an array of all tickets connected to a specified content item.\n\nOptions are\n/tickets/interaction/&lt;INTERACTIONID&gt;\n/tickets/contact/&lt;CONTACTID&gt;\n/tickets/event/&lt;EVENTID&gt;\n*/\n$fluro.api.get(`/tickets/interaction/${interactionID}`)\n    .then((res) =&gt; {\n        tickets.push(res.data);\n    })\n    .catch((err) =&gt; {\n        return done(err, 'STOP');\n    });\n\n// Return results\ninput.tickets = tickets;\n\nreturn done(null, input);"
-    },
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "621ebff1245c8d0011340979",
-      "script": "/*\nPut tickets under each contact\n*/\n\nconst interaction = input.interaction;\nconst primaryContact = input.primaryContact;\nconst secondaryContacts = input.secondaryContacts;\nconst tickets = input.tickets[0];\n\n// If no tickets, stop the Reaction\nif (tickets.length &lt; 1) {\n    return done(null, 'STOP');\n}\n\n// Put tickets under each contact\nfor (let i = 0; i &lt; tickets.length; i += 1) {\n    // If the ticket is active and there is an associated event\n    if (tickets[i].status === 'active' &amp;&amp; tickets[i].hasOwnProperty('event')) {\n        // If the contact is a secondary contact\n        if (secondaryContacts.hasOwnProperty(tickets[i].contact._id)) {\n            // If the contact does not already have a ticket array, create it\n            if (!secondaryContacts[tickets[i].contact._id].hasOwnProperty('tickets')) {\n                secondaryContacts[tickets[i].contact._id].tickets = [];\n            }\n\n            // Add the ticket to the contact's ticket array\n            secondaryContacts[tickets[i].contact._id].tickets.push({\n                _id: tickets[i]._id,\n                title: tickets[i].title,\n                event: {\n                    _id: tickets[i].event._id,\n                    title: tickets[i].event.title,\n                    startDate: tickets[i].event.startDate,\n                    endDate: tickets[i].event.endDate\n                }\n            });\n        }\n    }\n}\n\n// Return the data\ninput = {};\n\ninput.interaction = interaction;\ninput.primaryContact = primaryContact;\ninput.secondaryContacts = secondaryContacts;\n\nreturn done(null, input);"
-    },
-    {
-      "conditions": [],
-      "type": "code",
-      "_id": "6217935f76a61400104245b8",
-      "script": "/*\nEmail each extra attendee with ticket details\n*/\n\n// Load packages\nconst _ = require('lodash');\nconst async = require('async');\n\n// Set up request headers\nconst headers = { 'Content-Type': 'application/json; charset=utf-8' };\n\n// Set up results structures to return info to the next step]\nconst results = [];\n\n// Get input data needed\nconst interaction = _.get(input, 'interaction');\nconst primaryContact = _.get(input, 'primaryContact');\nconst secondaryContacts = _.get(input, 'secondaryContacts');\n\nconst ticketURL = `http://tickets.fluro.io/interaction/${interaction._id}`;\nconst interactionURL = `https://app.fluro.io/list/interaction/${interaction.definition}/${interaction._id}/edit`;\n\n// Filter out Contacts with no tickets\nconst secondaryContactIDs = Object.keys(secondaryContacts);\nconst secondaryContactsWithTickets = {};\nfor (let i = 0; i &lt; secondaryContactIDs.length; i += 1) {\n    if (secondaryContacts[secondaryContactIDs[i]].hasOwnProperty('tickets')) {\n        secondaryContactsWithTickets[secondaryContactIDs[i]] = secondaryContacts[secondaryContactIDs[i]];\n    }\n}\n\n// Run the async function\nreturn async.forEachOfSeries(secondaryContactsWithTickets, emailTicketInfo, emailTicketInfoCallback);\n\n// Function to execute on each contact\nfunction emailTicketInfo(contact, index, next) {\n    let eventList = '';\n\n    for (let i = 0; i &lt; contact.tickets.length; i += 1) {\n        const startDateObject = new Date(contact.tickets[i].event.startDate);\n        const startDateString = startDateObject.toLocaleString('en-AU', {\n            dateStyle: 'long',\n            timeStyle: 'short',\n            timeZone: 'Australia/Perth'\n        });\n\n        eventList = `\n            ${eventList}\n            &lt;h3&gt;${contact.tickets[i].event.title}&lt;/h3&gt;\n            &lt;p&gt;${contact.tickets[i].title}&lt;/p&gt;\n            &lt;p&gt;${startDateString}&lt;/p&gt;`;\n    }\n\n    const emailBody = `\n        &lt;div style='text-align: center;'&gt;\n            &lt;h1&gt;${interaction.realm.shortTitle} check-in details&lt;/h1&gt;\n            &lt;hr/&gt;\n            &lt;img src='https://api.fluro.io/system/qr?input=${ticketURL}&apos; style='border: 10px solid black; border-radius: 10px;' width='150px'/&gt;\n            &lt;h3&gt;${contact.firstName} ${contact.lastName}&lt;/h3&gt;\n            &lt;p&gt;${contact.email}&lt;/p&gt;\n            &lt;hr/&gt;\n            ${eventList}\n            &lt;hr/&gt;\n        &lt;/div&gt;\n        &lt;div style='text-align: left;'&gt;\n            &lt;p&gt;The payment receipt and full registration details have been sent to ${primaryContact.firstName} ${primaryContact.lastName} (${primaryContact.email}).&lt;/p&gt;\n            &lt;h4&gt;Need help?&lt;/h4&gt;\n            &lt;p&gt;Reply to this email, or contact us at &lt;a href='mailto:${interaction.realm.email}?subject=${interaction.realm.title} enquiry'&gt;${interaction.realm.email}.&lt;/p&gt;\n            &lt;hr/&gt;\n            &lt;p&gt;&lt;small&gt;Christian Conventions of Western Australia&lt;br/&gt;\n            ABN 38 223 904 915&lt;br/&gt;&lt;/small&gt;&lt;/p&gt;\n            &lt;p style='color:#AAA;'&gt;&lt;small&gt;\n            Admin links: &lt;a href='${interactionURL}'&gt;Form submission&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;\n        &lt;/div&gt;`;\n\n    const body = {\n        fromName: interaction.realm.title,\n        fromEmail: interaction.realm.email,\n        toEmails: contact.email,\n        subject: `${interaction.realm.shortTitle} check-in details`,\n        body: emailBody\n    };\n\n    const emailReactionID = '621dfa141b17ad02986c7d78';\n\n    // POST https://api.fluro.io/reaction/spark/:reactionID\n    $fluro.api.post(`/reaction/spark/${emailReactionID}`, body, headers)\n        .then((res) =&gt; {\n            results.push(res.data);\n            next();\n        })\n        .catch((err) =&gt; next(err));\n}\n\n// Callback function — after all iterations are finished\nfunction emailTicketInfoCallback(err) {\n    if (err) {\n        const errorMessage = $fluro.utils.errorMessage(err);\n        return done(errorMessage, 'STOP');\n    }\n\n    // Return results\n    return done(null, input);\n}",
-      "deactivate": false
-    },
-    {
-      "conditions": [],
-      "type": "stop",
-      "_id": "6213941e791c2700122350cb"
-    }
-  ],
-  "permissionSets": [
-    {
-      "realms": [
-        {
-          "_id": "5e82a7cd281d6602b698b483",
-          "status": "active",
-          "title": "Christian Conventions of WA Inc",
-          "color": "#7f12b3",
-          "bgColor": "#e7b3ff",
-          "created": "2020-03-31T02:15:41.877Z",
-          "updated": "2020-03-31T02:15:41.912Z",
-          "slug": "christian-conventions-of-wa-inc",
-          "_type": "realm"
-        }
-      ],
-      "roles": [
-        {
-          "_id": "57f4640c461bb7401a858f77",
-          "title": "Full Access",
-          "_type": "role",
-          "realms": [
-            "54ebd2ef3a6e88a31bb68640"
-          ],
-          "status": "active",
-          "updated": "2021-02-24T06:19:11.856Z",
-          "created": "2016-10-05T02:23:08.750Z",
-          "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system"
-        }
-      ]
-    }
-  ],
-  "title": "Send check-in details to secondary contacts",
-  "account": {
-    "_id": "5e82a7cd281d6602b698b481",
-    "status": "active",
-    "title": "CCOWA",
-    "countryCode": "AU",
-    "timezone": "Australia/Perth"
-  },
-  "author": {
-    "_id": "5eb14f76f4e2c15ffb9bf805",
-    "firstName": "Sam",
-    "lastName": "Rae",
-    "name": "Sam Rae",
-    "_type": "user"
-  },
-  "managedAuthor": {
-    "_id": "5eb14f10ff872a540dbbbe16",
-    "_type": "persona",
-    "firstName": "Sam",
-    "title": "Sam Rae",
-    "lastName": "Rae"
-  },
-  "_type": "reaction",
-  "updatedBy": "Sam Rae",
-  "created": "2022-02-21T12:38:11.188Z",
-  "updated": "2022-03-29T11:08:10.102Z",
-  "tests": [
-    {
-      "_id": "622f45909e42760012594a98",
-      "title": "Live form input",
-      "json": "{\n    \"account\": \"5e82a7cd281d6602b698b481\",\n    \"user\": {\n        \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n        \"accountType\": \"application\"\n    },\n    \"item\": \"622f3de19e42760012594a11\",\n    \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"testTicketing\",\n        \"submittedData\": {\n            \"title\": \"Test ticketing\",\n            \"data\": {\n                \"contact\": [\"5e97e0806a9f734dcdc940f1\", \"619ca4884de7ec000f03a8af\"]\n            },\n            \"realms\": [\"61f546264d66c70018d73006\"],\n            \"rawData\": {\n                \"contact\": [{\n                    \"firstName\": \"Sam\",\n                    \"lastName\": \"Rae\",\n                    \"gender\": \"male\",\n                    \"dob\": \"1982-05-19T00:00:00.000Z\",\n                    \"email\": \"samrae@gmail.com\",\n                    \"phoneNumber\": \"0439769319\"\n                }, {\n                    \"firstName\": \"Test\",\n                    \"lastName\": \"Person\",\n                    \"gender\": \"male\",\n                    \"dob\": \"1982-05-19T00:00:00.000Z\",\n                    \"email\": \"samrae+test@gmail.com\",\n                    \"phoneNumber\": \"0439769319\"\n                }]\n            },\n            \"connectionData\": {\n                \"ip\": {\n                    \"clientIp\": \"159.196.133.245\",\n                    \"clientIpRoutable\": true\n                }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\"5e97e0806a9f734dcdc940f1\", \"619ca4884de7ec000f03a8af\"],\n            \"attemptLog\": \"622f3ddc9e42760012594a05\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testTicketing\"\n        }\n    },\n    \"key\": \"content.create\",\n    \"trigger\": \"content.create\",\n    \"message\": \"Created Test ticketing\",\n    \"model\": \"interaction\"\n}",
-      "testEmail": "sam@stalbans.org.au"
-    },
-    {
-      "_id": "622f45909e42760012594a99",
-      "title": "Manual Spark",
-      "json": "{\n    \"trigger\": \"manual.spark\",\n    \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"testTicketing\"\n    },\n    \"item\": {\n        \"title\": \"Test ticketing\",\n        \"_type\": \"interaction\",\n        \"definition\": \"testTicketing\",\n        \"_id\": \"622f3de19e42760012594a11\"\n    }\n}",
-      "testEmail": "sam@stalbans.org.au"
-    }
-  ],
-  "apikey": "$2a$10$FoXQjqyymBjdV2Hxqh43ae4KH8LtfLih9d/3VQ0f1PLFRuhf6Fut.",
-  "data": {},
-  "statDates": {
-    "view": "2022-02-24T09:37:05.375Z"
-  },
-  "stats": {
-    "view": 1
+  "owners":[
+  {
+  "_id":"5eb14f76f4e2c15ffb9bf805",
+  "firstName":"Sam",
+  "lastName":"Rae",
+  "name":"Sam Rae",
+  "_type":"user",
   }
-}
+  ],
+  "managedOwners":[
+  {
+  "_id":"5eb14f10ff872a540dbbbe16",
+  "_type":"persona",
+  "firstName":"Sam",
+  "title":"Sam Rae",
+  "lastName":"Rae",
+  }
+  ],
+  "status":"active",
+  "hashtags":[
+  ],
+  "_references":[
+  ],
+  "mentions":[
+  ],
+  "keywords":[
+  "christian conventions of wa inc",
+  ],
+  "privacy":"secure",
+  "triggers":[
+  "content.create",
+  ],
+  "conditions":[
+  "input.item._type == 'interaction'",
+  ],
+  "contacts":[
+  ],
+  "teams":[
+  ],
+  "integrations":[
+  ],
+  "items":[
+  ],
+  "styles":[
+  ],
+  "realms":[
+  {
+  "_id":"5e82a7cd281d6602b698b483",
+  "title":"Christian Conventions of WA Inc",
+  "color":"#7f12b3",
+  "bgColor":"#e7b3ff",
+  "slug":"christian-conventions-of-wa-inc",
+  "_type":"realm",
+  }
+  ],
+  "policies":[
+  ],
+  "developmentMode":false,
+  "tags":[
+  ],
+  "actions":[
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"622e24ad1ef900015ab2e328",
+  "script":"/* Get the interaction ID */ let inputType; let interaction; if (input.trigger === 'manual.spark' && input.data._type === 'interaction') { inputType = 'manualInteraction'; interaction = input.item._id; } else if (input.trigger === 'content.create' && input.data._type === 'interaction') { inputType = 'autoInteraction'; interaction = input.item; } else { inputType = 'unknown'; } // Replace input with only the data we need input = { inputType, interaction }; return done(null, input);",
+  },
+  {
+  "conditions":[
+  "inputType == "unknown"",
+  ],
+  "type":"stop",
+  "_id":"622e24ad1ef900015ab2e329",
+  },
+  {
+  "conditions":[
+  ],
+  "type":"populate",
+  "_id":"622e24ad1ef900015ab2e32a",
+  "data":{
+  "keys":[
+  "interaction",
+  ],
+  "populateSelect":[
+  ]
+  }
+  },
+  {
+  "conditions":[
+  ],
+  "type":"populate",
+  "_id":"622e24ad1ef900015ab2e32b",
+  "data":{
+  "keys":[
+  "interaction.realms",
+  ],
+  "populateSelect":[
+  "title",
+  "data.shortTitle",
+  "data.registrarEmail",
+  ]
+  }
+  },
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"622e24ad1ef900015ab2e32c",
+  "script":"/* Extract the data we need. */ // Load packages const _ = require('lodash'); // Get interaction info const { interaction } = input; const interactionRealm = interaction.realms[0]; const formattedInteraction = { _id: interaction._id, definition: interaction.definition, realm: { title: interactionRealm.title, shortTitle: interactionRealm.data.shortTitle, email: interactionRealm.data.registrarEmail } }; // Get contact info let primaryContact; const secondaryContacts = {}; if (!_.has(interaction.rawData, 'contact')) { // If no contacts attached to this interaction, stop the Reaction return done(null, 'STOP'); } for (let i = 0; i < interaction.rawData.contact.length; i += 1) { const thisContactID = interaction.data.contact[i]; const thisContactData = interaction.rawData.contact[i]; if (interaction.rawData.contact[i].email === interaction.primaryEmail) { primaryContact = { _id: thisContactID, firstName: thisContactData.firstName, lastName: thisContactData.lastName, email: thisContactData.email }; } else { secondaryContacts[thisContactID] = { _id: thisContactID, firstName: thisContactData.firstName, lastName: thisContactData.lastName, email: thisContactData.email }; } } if (secondaryContacts.length === 0) { // No secondary contacts. This Reaction is not needed. return done(null, 'STOP'); } input = { interaction: formattedInteraction, primaryContact, secondaryContacts }; return done(null, input);",
+  "deactivate":false,
+  },
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"621ca67897fa3e006288c52b",
+  "script":"/* Get tickets related to these contacts and this interaction */ // Load packages const _ = require('lodash'); // Set up results structures to return info to the next step] const tickets = []; // Get input data needed const interactionID = _.get(input, 'interaction._id'); /* GET https://api.fluro.io/tickets/:connection/:connectionID DESCRIPTION Returns an array of all tickets connected to a specified content item. Options are /tickets/interaction/<INTERACTIONID> /tickets/contact/<CONTACTID> /tickets/event/<EVENTID> */ $fluro.api.get(`/tickets/interaction/${interactionID}`) .then((res) => tickets.push(res.data)) .catch((err) => {return done(err, 'STOP')}); // Return results input.tickets = tickets; return done(null, input);",
+  },
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"621ebff1245c8d0011340979",
+  "script":"/* Put tickets under each contact */ // Load packages const _ = require('lodash'); const { interaction, primaryContact, secondaryContacts } = input; const tickets = input.tickets[0]; // If no tickets, stop the Reaction if (tickets.length < 1) { return done(null, 'STOP'); } // Put tickets under each contact for (let i = 0; i < tickets.length; i += 1) { // If the ticket is active and there is an associated event if (tickets[i].status === 'active' && _.has(tickets[i], 'event')) { // If the contact is a secondary contact if (_.has(secondaryContacts, tickets[i].contact._id)) { // If the contact does not already have a ticket array, create it if (!_.has(secondaryContacts[tickets[i].contact._id], 'tickets')) { secondaryContacts[tickets[i].contact._id].tickets = []; } // Add the ticket to the contact's ticket array secondaryContacts[tickets[i].contact._id].tickets.push({ _id: tickets[i]._id, title: tickets[i].title, event: { _id: tickets[i].event._id, title: tickets[i].event.title, startDate: tickets[i].event.startDate, endDate: tickets[i].event.endDate } }); } } } // Return the data input = { interaction, primaryContact, secondaryContacts }; return done(null, input);",
+  },
+  {
+  "conditions":[
+  ],
+  "type":"code",
+  "_id":"6217935f76a61400104245b8",
+  "script":"/* Email each extra attendee with ticket details */ // Load packages const _ = require('lodash'); const async = require('async'); // Set up request headers const headers = { 'Content-Type': 'application/json; charset=utf-8' }; // Set up results structures to return info to the next step] const results = []; // Get input data needed const interaction = _.get(input, 'interaction'); const primaryContact = _.get(input, 'primaryContact'); const secondaryContacts = _.get(input, 'secondaryContacts'); const ticketURL = `http://tickets.fluro.io/interaction/${interaction._id}`; const interactionURL = `https://app.fluro.io/list/interaction/${interaction.definition}/${interaction._id}/edit`; // Filter out Contacts with no tickets const secondaryContactIDs = Object.keys(secondaryContacts); const secondaryContactsWithTickets = {}; for (let i = 0; i < secondaryContactIDs.length; i += 1) { if (_.has(secondaryContacts[secondaryContactIDs[i]], 'tickets')) { secondaryContactsWithTickets[ secondaryContactIDs[i] ] = secondaryContacts[ secondaryContactIDs[i] ]; } } // Function to execute on each contact function emailTicketInfo(contact, index, next) { let eventList = ''; for (let i = 0; i < contact.tickets.length; i += 1) { const startDateObject = new Date(contact.tickets[i].event.startDate); const startDateString = startDateObject.toLocaleString('en-AU', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Australia/Perth' }); eventList = ` ${eventList} <h3>${contact.tickets[i].event.title}</h3> <p>${contact.tickets[i].title}</p> <p>${startDateString}</p>`; } const emailBody = ` <div style='text-align: center;'> <h1>${interaction.realm.shortTitle} check-in details</h1> <hr/> <img src='https://api.fluro.io/system/qr?input=${ticketURL}' style='border: 10px solid black; border-radius: 10px;' width='150px'/> <h3>${contact.firstName} ${contact.lastName}</h3> <p>${contact.email}</p> <hr/> ${eventList} <hr/> </div> <div style='text-align: left;'> <p>The payment receipt and full registration details have been sent to ${primaryContact.firstName} ${primaryContact.lastName} (${primaryContact.email}).</p> <h4>Need help?</h4> <p>Reply to this email, or contact us at <a href='mailto:${interaction.realm.email}?subject=${interaction.realm.title} enquiry'>${interaction.realm.email}.</p> <hr/> <p><small>Christian Conventions of Western Australia<br/> ABN 38 223 904 915<br/></small></p> <p style='color:#AAA;'><small> Admin links: <a href='${interactionURL}'>Form submission</a></small></p> </div>`; const body = { fromName: interaction.realm.title, fromEmail: interaction.realm.email, toEmails: contact.email, subject: `${interaction.realm.shortTitle} check-in details`, body: emailBody }; const emailReactionID = '621dfa141b17ad02986c7d78'; // POST https://api.fluro.io/reaction/spark/:reactionID $fluro.api.post(`/reaction/spark/${emailReactionID}`, body, headers) .then((res) => { results.push(res.data); next(); }) .catch((err) => next(err)); } // Callback function — after all iterations are finished function emailTicketInfoCallback(err) { if (err) { const errorMessage = $fluro.utils.errorMessage(err); return done(errorMessage, 'STOP'); } // Return results return done(null, input); } // Run the async function return async.forEachOfSeries( secondaryContactsWithTickets, emailTicketInfo, emailTicketInfoCallback );",
+  "deactivate":false,
+  },
+  {
+  "conditions":[
+  ],
+  "type":"stop",
+  "_id":"6213941e791c2700122350cb",
+  }
+  ],
+  "permissionSets":[
+  {
+  "realms":[
+  {
+  "_id":"5e82a7cd281d6602b698b483",
+  "status":"active",
+  "title":"Christian Conventions of WA Inc",
+  "color":"#7f12b3",
+  "bgColor":"#e7b3ff",
+  "created":"2020-03-31T02:15:41.877Z",
+  "updated":"2020-03-31T02:15:41.912Z",
+  "slug":"christian-conventions-of-wa-inc",
+  "_type":"realm",
+  }
+  ],
+  "roles":[
+  {
+  "_id":"57f4640c461bb7401a858f77",
+  "title":"Full Access",
+  "_type":"role",
+  "realms":[
+  "54ebd2ef3a6e88a31bb68640",
+  ],
+  "status":"active",
+  "updated":"2021-02-24T06:19:11.856Z",
+  "created":"2016-10-05T02:23:08.750Z",
+  "firstLine":"Grants access to Create, Edit, View and Delete almost every type of content in the system",
+  }
+  ]
+  }
+  ],
+  "title":"Send check-in details to secondary contacts",
+  "account":{
+  "_id":"5e82a7cd281d6602b698b481",
+  "status":"active",
+  "title":"CCOWA",
+  "countryCode":"AU",
+  "timezone":"Australia/Perth",
+  },
+  "author":{
+  "_id":"5eb14f76f4e2c15ffb9bf805",
+  "firstName":"Sam",
+  "lastName":"Rae",
+  "name":"Sam Rae",
+  "_type":"user",
+  },
+  "managedAuthor":{
+  "_id":"5eb14f10ff872a540dbbbe16",
+  "_type":"persona",
+  "firstName":"Sam",
+  "title":"Sam Rae",
+  "lastName":"Rae",
+  },
+  "_type":"reaction",
+  "updatedBy":"Sam Rae",
+  "created":"2022-02-21T12:38:11.188Z",
+  "updated":"2022-04-02T04:44:44.638Z",
+  "tests":[
+  {
+  "_id":"622f45909e42760012594a98",
+  "title":"Live form input",
+  "json":"{ "account": "5e82a7cd281d6602b698b481", "user": { "_id": "5eff0aa041a86b0cfbe961c5", "accountType": "application" }, "item": "622f3de19e42760012594a11", "data": { "_type": "interaction", "definition": "testTicketing", "submittedData": { "title": "Test ticketing", "data": { "contact": ["5e97e0806a9f734dcdc940f1", "619ca4884de7ec000f03a8af"] }, "realms": ["61f546264d66c70018d73006"], "rawData": { "contact": [{ "firstName": "Sam", "lastName": "Rae", "gender": "male", "dob": "1982-05-19T00:00:00.000Z", "email": "samrae@gmail.com", "phoneNumber": "0439769319" }, { "firstName": "Test", "lastName": "Person", "gender": "male", "dob": "1982-05-19T00:00:00.000Z", "email": "samrae+test@gmail.com", "phoneNumber": "0439769319" }] }, "connectionData": { "ip": { "clientIp": "159.196.133.245", "clientIpRoutable": true } }, "applicationAuthor": "5eff0aa041a86b0cfbe961c5", "account": "5e82a7cd281d6602b698b481", "primaryEmail": "samrae@gmail.com", "contact": null, "contacts": ["5e97e0806a9f734dcdc940f1", "619ca4884de7ec000f03a8af"], "attemptLog": "622f3ddc9e42760012594a05", "mentions": [], "hashtags": [], "_type": "interaction", "definition": "testTicketing" } }, "key": "content.create", "trigger": "content.create", "message": "Created Test ticketing", "model": "interaction" }",
+  "testEmail":"sam@stalbans.org.au",
+  },
+  {
+  "_id":"622f45909e42760012594a99",
+  "title":"Manual Spark",
+  "json":"{ "trigger": "manual.spark", "data": { "_type": "interaction", "definition": "testTicketing" }, "item": { "title": "Test ticketing", "_type": "interaction", "definition": "testTicketing", "_id": "622f3de19e42760012594a11" } }",
+  "testEmail":"sam@stalbans.org.au",
+  }
+  ],
+  "apikey":"$2a$10$FoXQjqyymBjdV2Hxqh43ae4KH8LtfLih9d/3VQ0f1PLFRuhf6Fut.",
+  "data":{
+  },
+  "statDates":{
+  "view":"2022-02-24T09:37:05.375Z",
+  },
+  "stats":{
+  "view":1,
+  }
+  }
