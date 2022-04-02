@@ -16,11 +16,11 @@ Example body input:
 /*
 Validate input
 */
-if(!input.fromName) return done('No from name supplied','STOP');
-if(!input.fromEmail) return done('No from email address supplied','STOP');
-if(!input.toEmails && !input.toContactIDs) return done('No contact IDs or email addresses supplied','STOP');
-if(!input.subject) return done('No email subject supplied','STOP');
-if(!input.body) return done('No email body supplied','STOP');
+if (!input.fromName) return done('No from name supplied', 'STOP');
+if (!input.fromEmail) return done('No from email address supplied', 'STOP');
+if (!input.toEmails && !input.toContactIDs) return done('No contact IDs or email addresses supplied', 'STOP');
+if (!input.subject) return done('No email subject supplied', 'STOP');
+if (!input.body) return done('No email body supplied', 'STOP');
 
 // Supply defaults if they're not there
 if (!input.toContactIDs) input.toContactIDs = null;
