@@ -4,143 +4,129 @@ NOT CURRENTLY FUNCTIONAL
 Create new churches if necessary
 */
 
-//Load packages
-var _ = require('lodash');
-var async = require('async');
+// // Load packages
+// const _ = require('lodash');
+// const async = require('async');
 
-// Set up request headers
-const headers = {"Content-Type": "application/json; charset=utf-8"};
+// // Set up request headers
+// const headers = { 'Content-Type': 'application/json; charset=utf-8' };
 
-// Set up results structures to return info to the next step
-//const createdNewChurch = [];
-//const foundChurches = [];
+// // Get input data needed
+// const { contacts, contactsAndChurches } = input;
 
-// Get input data needed
-let contacts = _.get(input, 'contacts');
-let contactsAndChurches = _.get(input, 'contactsAndChurches');
+// // Build an array of new churches and contacts to process
+// const newChurchNamesAndContacts = {};
 
-// Build an array of new churches and contacts to process
-let newChurchNamesAndContacts = {};
+// // Loop through contacts
+// for (let i = 0; i < contacts.length; i += 1) {
+//     const thisContactAndChurch = contactsAndChurches[contacts[i]];
 
-// Loop through contacts
-for(let i=0; i<contacts.length; i++) {
+//     // If contact has said their church is not listed
+//     if (_.has(thisContactAndChurch 'churchNotListedName')) {
+//         const newChurch = {};
+//         const newChurchName = thisContactAndChurch.churchNotListedName;
+//         const contactsToAdd = [];
+//         const contactToAdd = thisContactAndChurch.contact;
 
-    if(contactsAndChurches[contacts[i]].hasOwnProperty('churchNotListedName')) { // If contact has said their church is not listed
+//         // If church name is not in the array already
+//         if (!_.has(newChurchNamesAndContacts, newChurchName)) {
+//             // Add the church name and contact to the list
+//             newChurch.newChurchName = newChurchName;
+//             contactsToAdd.push(contactToAdd);
+//             newChurch.contacts = contactsToAdd;
 
-        let newChurch = {};
-        let newChurchName = contactsAndChurches[contacts[i]].churchNotListedName;
-        let contactsToAdd = [];
-        let contactToAdd = contactsAndChurches[contacts[i]].contact;
+//             newChurchNamesAndContacts[newChurchName] = newChurch;
+//         } else {
+//             // The church name is already in the list
+//             // Add the contact to the array
+//             newChurchNamesAndContacts[newChurchName].contacts.push(contactToAdd);
+//         }
+//     }
+// }
 
-        if(!newChurchNamesAndContacts.hasOwnProperty(newChurchName)) { // If church name is not in the array already
+// input.newChurchNamesAndContacts = newChurchNamesAndContacts;
 
-            // Add the church name and contact to the list
-            newChurch.newChurchName = newChurchName;
-            contactsToAdd.push(contactToAdd);
-            newChurch.contacts = contactsToAdd;
+// function searchForChurch(newChurchNameAndContacts, index, next) {
+//     const body = {
+//         filter: {
+//             filters: [{
+//                 key: 'title', // The field to filter on
+//                 comparator: 'in', // The comparator to use
+//                 values: [ // Multiple values to check
+//                     newChurchNameAndContacts.newChurchName
+//                 ]
+//             }]
+//         }
+//     };
 
-            newChurchNamesAndContacts[newChurchName] = newChurch;
+//     // POST https://api.fluro.io/content/:type/filter
+//     $fluro.api.post('/content/church/filter', body, headers)
+//         .then((res) => {
+//             // If any data is returned
+//             if (res.data.length > 0) {
+//                 for (let i = 0; i < newChurchNameAndContacts.contacts.length; i += 1) {
+//                     contactsAndChurches[newChurchNameAndContacts.contacts[i]]
+//                         .foundChurch = res.data[0]._id;
+//                 }
 
-        } else { // The church name is already in the list
+//                 /* foundChurches.push({
+//                     'foundChurchName': res.data[0].title,
+//                     'foundChurch': res.data[0]._id,
+//                     'contacts': newChurchNameAndContacts.contacts
+//                 }); */
+//             }
 
-            // Add the contact to the array
-            newChurchNamesAndContacts[newChurchName].contacts.push(contactToAdd);
-        }
-    }
-}
+//             next();
+//         })
+//         .catch((err) => next(err));
+// }
 
-input.newChurchNamesAndContacts = newChurchNamesAndContacts;
+// // Callback function — after all iterations are finished
+// function searchForChurchCallback(err) {
+//     if (err) {
+//         const errorMessage = $fluro.utils.errorMessage(err);
+//         return done(errorMessage, 'STOP');
+//     }
 
-// Run the async function
-return async.forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);
+//     // Return results
+//     // input.foundChurches = foundChurches;
 
-//return async.forEachOfSeries(newChurchNamesToCreate, createChurch, createChurchCallback);
+//     return done(null, input);
+// }
 
-function searchForChurch(newChurchNameAndContacts, index, next) {
+// // Function to execute on each contact
+// function createChurch(newChurchName, index, next) {
+//     const body = {
+//         // 'definition': 'church',
+//         title: newChurchName,
+//         realms: ['61f546264d66c70018d73006']
+//     };
 
-    let body = {
+//     // https://api.fluro.io/content/:type
+//     $fluro.api.post('/content/church', body, headers)
+//         .then((res) => {
+//             createdNewChurch.push(Object.keys(res)); /* newChurchName */
 
-        "filter":
-        {
-            "filters": [
-            {
-                "key": "title", //The field to filter on
-                "comparator": "in", //The comparator to use
-                "values": [ //Multiple values to check
-                    newChurchNameAndContacts.newChurchName
-                ]
-            }]
-        }
-    };
+//             next();
+//         })
+//         .catch((err) => next(err));
+// }
 
-    // POST https://api.fluro.io/content/:type/filter
-    $fluro.api.post(`/content/church/filter`, body, headers)
-        .then(res => {
-            console.log(res);
+// // Callback function — after all iterations are finished
+// function createChurchCallback(err) {
+//     if (err) {
+//         const errorMessage = $fluro.utils.errorMessage(err);
+//         return done(errorMessage, 'STOP');
+//     }
 
-            if(res.data.length > 0) { // If any data is returned
-                for(let i=0; i<newChurchNameAndContacts.contacts.length; i++) {
-                    contactsAndChurches[newChurchNameAndContacts.contacts[i]].foundChurch = res.data[0]._id;
-                }
+//     // Return results
+//     input.newChurchNamesToCreate = newChurchNamesToCreate;
+//     input.createdNewChurch = createdNewChurch;
+//     return done(null, input);
+// }
 
-                /*foundChurches.push({
-                    "foundChurchName": res.data[0].title,
-                    "foundChurch": res.data[0]._id,
-                    "contacts": newChurchNameAndContacts.contacts
-                });*/
-            }
+// // Run the async function
+// return async.forEachOfSeries(newChurchNamesAndContacts,
+// searchForChurch, searchForChurchCallback);
 
-            next();
-        })
-        .catch(err => next(err));
-}
-
-// Callback function — after all iterations are finished
-function searchForChurchCallback(err) {
-    if (err) {
-        var errorMessage = $fluro.utils.errorMessage(err);
-        return done(errorMessage, "STOP");
-    }
-
-	// Return results
-    //input.foundChurches = foundChurches;
-
-	return done(null, input);
-}
-
-
-// Function to execute on each contact
-function createChurch(newChurchName, index, next) {
-
-    let body = {
-
-        //"definition": "church",
-        "title": newChurchName,
-        "realms": ["61f546264d66c70018d73006"]
-    };
-
-    // https://api.fluro.io/content/:type
-    $fluro.api.post(`/content/church`, body, headers)
-        .then(res => {
-            console.log(res);
-
-            createdNewChurch.push(Object.keys(res));/*newChurchName*/
-
-
-            next();
-        })
-        .catch(err => next(err));
-}
-
-// Callback function — after all iterations are finished
-function createChurchCallback(err) {
-    if (err) {
-        var errorMessage = $fluro.utils.errorMessage(err);
-        return done(errorMessage, "STOP");
-    }
-
-	// Return results
-    input.newChurchNamesToCreate = newChurchNamesToCreate;
-	input.createdNewChurch = createdNewChurch;
-	return done(null, input);
-}
+// // return async.forEachOfSeries(newChurchNamesToCreate, createChurch, createChurchCallback);

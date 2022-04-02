@@ -2,67 +2,56 @@
 Update detail sheets to include a plain text church title
 */
 
-//Load packages
-var _ = require('lodash');
-var async = require('async');
+// Load packages
+const _ = require('lodash');
+const async = require('async');
 
 // Set up request headers
-const headers = {"Content-Type": "application/json; charset=utf-8"};
-
-// Set up results structures to return info to the next step
-const updatedDetailSheets = [];
+const headers = { 'Content-Type': 'application/json; charset=utf-8' };
 
 // Get input data needed
-let contacts = _.get(input, 'contacts');
-let contactsAndChurches = _.get(input, 'contactsAndChurches');
-
+const { contacts, contactsAndChurches } = input;
 
 // Build an array of detail sheets to update
-let detailSheetsToUpdate = [];
+const detailSheetsToUpdate = [];
 
 // Loop through contacts
-for(let i=0; i<contacts.length; i++) {
+for (let i = 0; i < contacts.length; i += 1) {
+    const thisContact = contactsAndChurches[contacts[i]];
 
-    if(contactsAndChurches[contacts[i]].hasOwnProperty('churchOnDetailSheetTitle')) { // If the church title has been retrieved
-
+    // If the church title has been retrieved
+    if (_.has(thisContact, 'churchOnDetailSheetTitle')) {
         // Add the detail sheet, and church to an array to process
         detailSheetsToUpdate.push({
-            "detailSheet": contactsAndChurches[contacts[i]].detailSheet,
-            "church": contactsAndChurches[contacts[i]].churchOnDetailSheetTitle
+            detailSheet: thisContact.detailSheet,
+            church: thisContact.churchOnDetailSheetTitle
         });
     }
 }
 
-// Run the async function
-return async.forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);
-
 function updateDetailSheet(detailSheetToUpdate, index, next) {
-
-    let body = {
-        "data": {
-            "churchAttendingTitle": detailSheetToUpdate.church
+    const body = {
+        data: {
+            churchAttendingTitle: detailSheetToUpdate.church
         }
     };
 
     // PUT https://api.fluro.io/content/:type/:id
-    $fluro.api.put("/content/churchDetails/"+detailSheetToUpdate.detailSheet, body, headers)
-        .then(res => {
-            console.log(res);
-
-            next();
-        })
-        .catch(err => next(err));
+    $fluro.api.put(`/content/churchDetails/${detailSheetToUpdate.detailSheet}`, body, headers)
+        .then(() => next())
+        .catch((err) => next(err));
 }
 
 // Callback function — after all iterations are finished
 function updateDetailSheetCallback(err) {
     if (err) {
-        var errorMessage = $fluro.utils.errorMessage(err);
-        return done(errorMessage, "STOP");
+        const errorMessage = $fluro.utils.errorMessage(err);
+        return done(errorMessage, 'STOP');
     }
 
-	// Return results
-
-
-	return done(null, input);
+    // Return results
+    return done(null, input);
 }
+
+// Run the async function
+return async.forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);

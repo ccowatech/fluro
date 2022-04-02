@@ -2,67 +2,63 @@
 Remove contacts from churches that they're no longer in
 */
 
-//Load packages
-var _ = require('lodash');
-var async = require('async');
+// Load packages
+const async = require('async');
 
 // Set up results structures to return info to the next step
 const result = {};
 const removedContactFromChurch = [];
 
 // Get input data needed
-let contacts = _.get(input, 'contacts');
-let contactsAndChurches = _.get(input, 'contactsAndChurches');
+const { contacts, contactsAndChurches } = input;
 
 // Make an array of contact/church combinations to process
-let contactAndChurchCombosToRemove = [];
+const contactAndChurchCombosToRemove = [];
 
 // Loop through contacts
-for(let i=0; i<contacts.length; i++) {
+for (let i = 0; i < contacts.length; i += 1) {
+    const thisContactAndChurches = contactsAndChurches[contacts[i]];
 
     // Loop through churches to remove for each contact
-    for(let j=0; j<contactsAndChurches[contacts[i]].churches.length; j++) {
-
-        if((contactsAndChurches[contacts[i]].churches[j] != contactsAndChurches[contacts[i]].churchOnDetailSheet) // IF church is not the church on the detail sheet
-            || contactsAndChurches[contacts[i]].churchIsNotListed // OR Person has said their church is not listed
-            || contactsAndChurches[contacts[i]].attendsChurch == "no") { // OR Person has said they don't attend church at all
-
+    for (let j = 0; j < contactsAndChurches[contacts[i]].churches.length; j += 1) {
+        // If church is not the church on the detail sheet
+        if ((thisContactAndChurches.churches[j] !== thisContactAndChurches.churchOnDetailSheet)
+        // Or Person has said their church is not listed
+        || thisContactAndChurches.churchIsNotListed
+        // Or Person has said they don't attend church at all
+        || thisContactAndChurches.attendsChurch === 'no') {
             // Add the contact and church to the list to remove
             contactAndChurchCombosToRemove.push({
                 contact: contacts[i],
-                church: contactsAndChurches[contacts[i]].churches[j]
+                church: thisContactAndChurches.churches[j]
             });
         }
     }
 }
 
-// Run the async function
-return async.forEachOfSeries(contactAndChurchCombosToRemove, leaveGroup, leaveGroupCallback);
-
 // Function to execute on each contact
 function leaveGroup(contactAndChurchCombo, index, next) {
-
     // https://api.fluro.io/teams/:teamID/leave/:contactID
     $fluro.api.delete(`/teams/${contactAndChurchCombo.church}/leave/${contactAndChurchCombo.contact}`)
-        .then(res => {
-            console.log(res);
-
+        .then(() => {
             removedContactFromChurch.push(contactAndChurchCombo);
-
             next();
         })
-        .catch(err => next(err));
+        .catch((err) => next(err));
 }
 
-// Callback function — after all iterations are finished
+// Callback function — after all iterations are finished
 function leaveGroupCallback(err) {
     if (err) {
-        var errorMessage = $fluro.utils.errorMessage(err);
-        return done(errorMessage, "STOP");
+        const errorMessage = $fluro.utils.errorMessage(err);
+        return done(errorMessage, 'STOP');
     }
 
-	// Return results
-	result.removedContactFromChurch = removedContactFromChurch;
-	input.result = result;
-	return done(null, input);
+    // Return results
+    result.removedContactFromChurch = removedContactFromChurch;
+    input.result = result;
+    return done(null, input);
 }
+
+// Run the async function
+return async.forEachOfSeries(contactAndChurchCombosToRemove, leaveGroup, leaveGroupCallback);

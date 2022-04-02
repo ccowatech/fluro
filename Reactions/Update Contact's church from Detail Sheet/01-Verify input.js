@@ -16,7 +16,8 @@ It can be sparked manually on:
 - churchDetails detail sheets
 
 Info:
-- This doesn't actually use any information from the form submission apart from the contact IDs. All the detail sheet information is picked up from the current detail sheet as it is in Fluro.
+- This doesn't actually use any information from the form submission apart from the contact IDs.
+All the detail sheet information is picked up from the current detail sheet as it is in Fluro.
 
 */
 
@@ -24,15 +25,15 @@ Info:
 Verify input
 */
 
-var inputType;
+let inputType;
 
 // Check what sort of input we have
-if(input.item.definition == "churchDetails" || input.model == "contactdetail") {
-    inputType = "detailSheet";
-} else if(input.data._type == "interaction") {
-    inputType = "interaction";
+if (input.item.definition === 'churchDetails' || input.model === 'contactdetail') {
+    inputType = 'detailSheet';
+} else if (input.data._type === 'interaction') {
+    inputType = 'interaction';
 } else {
-    inputType = "unknown";
+    inputType = 'unknown';
     return done(null, 'STOP');
 }
 

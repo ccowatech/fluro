@@ -2,61 +2,54 @@
 Load the churches that each contact is in
 */
 
-//Load packages
-var _ = require('lodash');
-var async = require('async');
+// Load packages
+const async = require('async');
 
 // Set up request headers
-const headers = {"Content-Type": "application/json; charset=utf-8"};
+const headers = { 'Content-Type': 'application/json; charset=utf-8' };
 
 // Get input data needed
-let contacts = _.get(input, 'contacts');
-let contactsAndChurches = _.get(input, 'contactsAndChurches');
-
-// Run the async function
-return async.forEachOfSeries(contactsAndChurches, listGroups, listGroupsCallback);
+const { contacts, contactsAndChurches } = input;
 
 // Function to execute on each contact
-function listGroups(contactAndChurches, index, next) {
-
-    var body = {
-        "_type": "team",
-        "status": "active",
-        "definition": "church",
-        "provisionalMembers": contactAndChurches.contact
+function listGroups({ contact }, index, next) {
+    const body = {
+        _type: 'team',
+        status: 'active',
+        definition: 'church',
+        provisionalMembers: contact
     };
 
     // https://api.fluro.io/content/_query
-    $fluro.api.post(`/content/_query/?select=title _id`, body, headers)
-        .then(res => {
-            console.log(res);
-
-            let churches = [];
+    $fluro.api.post('/content/_query/?select=title _id', body, headers)
+        .then((res) => {
+            const churches = [];
 
             // Construct an array of churches
-            for(let i = 0; i < res.data.length; i++) {
-                    churches.push(res.data[i]["_id"]);
+            for (let i = 0; i < res.data.length; i += 1) {
+                churches.push(res.data[i]._id);
             }
-
-            contactsAndChurches[contactAndChurches.contact].churches = churches;
-
+            contactsAndChurches[contact].churches = churches;
             next();
         })
-        .catch(err => next(err));
+        .catch((err) => next(err));
 }
 
 // Callback function — after all iterations are finished
 function listGroupsCallback(err) {
     if (err) {
-        var errorMessage = $fluro.utils.errorMessage(err);
-        return done(errorMessage, "STOP");
+        const errorMessage = $fluro.utils.errorMessage(err);
+        return done(errorMessage, 'STOP');
     }
 
-    // Clear the input
-    input = {};
+    // Replace input with updated data
+    input = {
+        contacts,
+        contactsAndChurches
+    };
 
-	// Return results
-    input.contacts = contacts;
-    input.contactsAndChurches = contactsAndChurches;
-	return done(null, input);
+    return done(null, input);
 }
+
+// Run the async function
+return async.forEachOfSeries(contactsAndChurches, listGroups, listGroupsCallback);

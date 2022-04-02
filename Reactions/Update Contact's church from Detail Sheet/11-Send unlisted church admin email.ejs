@@ -3,41 +3,45 @@
 <h3>The following detail sheets have been updated with a church that does not exist in our list.</h3>
 
 <%
+    // Load packages
+    const _ = require('lodash');
+    
+    // Get input data needed
+    const { contacts, contactsAndChurches } = input;
+    
+    for(let i = 0; i < contacts.length; i += 1) {
+        const thisContactAndChurch = contactsAndChurches[contacts[i]];
 
-let contacts = get('input.contacts');
-let contactsAndChurches = get('input.contactsAndChurches');
+        if (thisContactAndChurch.churchIsNotListed
+        && thisContactAndChurch.churchNotListedName !== '') {
+            let churchNotListedName = thisContactAndChurch.churchNotListedName;
+            const detailSheet = thisContactAndChurch.detailSheet;
 
-for(let i = 0; i < contacts.length; i++) {
-    if(contactsAndChurches[contacts[i]].churchIsNotListed
-    && contactsAndChurches[contacts[i]].churchNotListedName != "") {
-        let churchNotListedName = contactsAndChurches[contacts[i]].churchNotListedName;
-        let detailSheet = contactsAndChurches[contacts[i]].detailSheet;
-
-    %>  <hr/>
-        <h4>Detail Sheet: <code><a href="https://app.fluro.io/list/contactdetail/churchDetails/<%= detailSheet %>/edit"><%=detailSheet%></a></code></h4>
-        <h4>Church name: <code><%= churchNotListedName %></code></h4>
-        <%
-        if(contactsAndChurches[contacts[i]].hasOwnProperty("fuzzyMatchedChurches")) {
-
-            let churchNotListedName = contactsAndChurches[contacts[i]].churchNotListedName;
             %>
-
-            <p>Here are some existing churches with similar names:</p>
-            <ul>
-
-                <%
-                let fuzzyMatchedChurches = contactsAndChurches[contacts[i]].fuzzyMatchedChurches;
-
-                for(let j=0; j < fuzzyMatchedChurches.length; j++) {%>
-                    <li><%= fuzzyMatchedChurches[j].title %></li>
-                <%
-                } %>
-            </ul>
+            <hr/>
+            <h4>Detail Sheet: <code><a href="https://app.fluro.io/list/contactdetail/churchDetails/<%= detailSheet %>/edit"><%=detailSheet%></a></code></h4>
+            <h4>Church name: <code><%= churchNotListedName %></code></h4>
             <%
+            if (_.has(thisContactAndChurch, 'fuzzyMatchedChurches')) {
+                let churchNotListedName = thisContactAndChurch.churchNotListedName;
+                %>
+                
+                <p>Here are some existing churches with similar names:</p>
+                <ul>
+                    <%
+                    const fuzzyMatchedChurches = thisContactAndChurch.fuzzyMatchedChurches;
+
+                    for (let j = 0; j < fuzzyMatchedChurches.length; j += 1) {%>
+                        <li><%= fuzzyMatchedChurches[j].title %></li>
+                    <%
+                    } 
+                    %>
+                </ul>
+                <%
+            }
         }
     }
-}
-
 %>
 <hr/>
-<p>Please manually check the detail sheets and either select the correct church, or create a new church and select it. New churches will need to be added to live forms as available churches to choose from.</p>
+<p>Please manually check the detail sheets and either select the correct church, or create a new church and select it. 
+    New churches will need to be added to live forms as available churches to choose from.</p>
