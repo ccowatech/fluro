@@ -3,7 +3,7 @@ Extract data we need
 */
 
 // Load packages
-const _ = require('lodash');
+const has = require('lodash/has');
 
 // Get data from input
 const interactionRealms = input.item.realms;
@@ -12,11 +12,11 @@ const inputContacts = input.data.submittedData.data.contact;
 let contacts = [];
 
 // If single contact object
-if (_.has(inputContacts, '_id')) {
+if (has(inputContacts, '_id')) {
     contacts.push(inputContacts);
 
 // If array of contact objects
-} else if (_.isArray(inputContacts)) {
+} else if (inputContacts instanceof Array && inputContacts.length > 0) {
     contacts = inputContacts;
 
 // Else seems like there are no contacts attached. Stop the Reaction.

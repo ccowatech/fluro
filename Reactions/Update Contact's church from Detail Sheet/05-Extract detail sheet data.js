@@ -3,7 +3,7 @@ Extract data from detail sheets that we need, clear the rest
 */
 
 // Load packages
-const _ = require('lodash');
+const has = require('lodash/has');
 
 // Get input
 const { detailSheets, contacts } = input;
@@ -18,9 +18,9 @@ for (let i = 0; i < detailSheets.length; i += 1) {
             attendsChurch: detailSheets[i].data.attendsChurch
         };
 
-        if (_.has(detailSheets[i].data, 'churchAttending')) {
+        if (has(detailSheets[i].data, 'churchAttending')) {
             if (detailSheets[i].data.churchAttending != null) {
-                if (_.has(detailSheets[i].data.churchAttending, '_id')) {
+                if (has(detailSheets[i].data.churchAttending, '_id')) {
                     // In case churchAttending is an object with an ID
                     contactsAndChurches[detailSheets[i].contact]
                         .churchOnDetailSheet = detailSheets[i].data.churchAttending._id;
@@ -31,7 +31,7 @@ for (let i = 0; i < detailSheets.length; i += 1) {
                 }
             }
         }
-        if (_.has(detailSheets[i].data, 'churchNotListedName') && _.has(detailSheets[i].data, 'churchIsNotListed')) {
+        if (has(detailSheets[i].data, 'churchNotListedName') && has(detailSheets[i].data, 'churchIsNotListed')) {
             if (detailSheets[i].data.churchIsNotListed === true) {
                 contactsAndChurches[detailSheets[i].contact]
                     .churchIsNotListed = detailSheets[i].data.churchIsNotListed;

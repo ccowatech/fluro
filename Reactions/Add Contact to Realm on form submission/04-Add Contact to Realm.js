@@ -3,8 +3,7 @@ Add Contact to Realm
 */
 
 // Load packages
-// const _ = require('lodash');
-const async = require('async');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Get input data needed
 const { interactionRealms, contacts } = input;
@@ -47,4 +46,4 @@ function callback(err) {
 }
 
 // Run the async functions
-return async.forEachOfSeries(contacts, updateRealms, callback);
+return forEachOfSeries(contacts, updateRealms, callback);

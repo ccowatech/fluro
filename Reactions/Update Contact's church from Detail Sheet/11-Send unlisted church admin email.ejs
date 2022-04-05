@@ -4,7 +4,7 @@
 
 <%
     // Load packages
-    const _ = require('lodash');
+    const has = require('lodash/has');
     
     // Get input data needed
     const { contacts, contactsAndChurches } = input;
@@ -22,7 +22,7 @@
             <h4>Detail Sheet: <code><a href="https://app.fluro.io/list/contactdetail/churchDetails/<%= detailSheet %>/edit"><%=detailSheet%></a></code></h4>
             <h4>Church name: <code><%= churchNotListedName %></code></h4>
             <%
-            if (_.has(thisContactAndChurch, 'fuzzyMatchedChurches')) {
+            if (has(thisContactAndChurch, 'fuzzyMatchedChurches')) {
                 let churchNotListedName = thisContactAndChurch.churchNotListedName;
                 %>
                 

@@ -5,8 +5,8 @@ find fuzzy matches for churches that already exist
 */
 
 // Load packages
-const _ = require('lodash');
-const async = require('async');
+const has = require('lodash/has');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up request headers
 const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -27,7 +27,7 @@ for (let i = 0; i < contacts.length; i += 1) {
     // If contact has said their church is not listed …
     if (thisContactAndChurch.churchIsNotListed
     // AND an exact match has not been found
-    && !_.has(thisContactAndChurch, 'exactMatchChurch')
+    && !has(thisContactAndChurch, 'exactMatchChurch')
     // AND the unlisted church name is not blank
     && thisContactAndChurch.churchNotListedName !== '') {
         newChurchesHaveBeenSubmitted = true;
@@ -38,7 +38,7 @@ for (let i = 0; i < contacts.length; i += 1) {
         const contactToAdd = thisContactAndChurch.contact;
 
         // If church name is not in the array already
-        if (!_.has(newChurchNamesAndContacts, newChurchName)) {
+        if (!has(newChurchNamesAndContacts, newChurchName)) {
             // Add the church name and contact to the list
             newChurch.newChurchName = newChurchName;
             contactsToAdd.push(contactToAdd);
@@ -89,4 +89,4 @@ function searchForChurchCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);
+return forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);

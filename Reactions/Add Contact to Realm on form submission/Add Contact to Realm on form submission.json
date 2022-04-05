@@ -82,14 +82,14 @@
       "conditions": [],
       "type": "code",
       "_id": "61a4ca045c68ba000e5b9753",
-      "script": "/* Extract data we need */ // Load packages const _ = require('lodash'); // Get data from input const interactionRealms = input.item.realms; const inputContacts = input.data.submittedData.data.contact; let contacts = []; // If single contact object if (_.has(inputContacts, '_id')) { contacts.push(inputContacts); // If array of contact objects } else if (_.isArray(inputContacts)) { contacts = inputContacts; // Else seems like there are no contacts attached. Stop the Reaction. } else { return done(null, 'STOP'); } // Replace input with only the data we need input = { interactionRealms, contacts }; // Finish the action and send the input to the next action return done(null, input);",
+      "script": "/* Extract data we need */ // Load packages const has = require('lodash/has'); // Get data from input const interactionRealms = input.item.realms; const inputContacts = input.data.submittedData.data.contact; let contacts = []; // If single contact object if (has(inputContacts, '_id')) { contacts.push(inputContacts); // If array of contact objects } else if (inputContacts instanceof Array && inputContacts.length > 0) { contacts = inputContacts; // Else seems like there are no contacts attached. Stop the Reaction. } else { return done(null, 'STOP'); } // Replace input with only the data we need input = { interactionRealms, contacts }; // Finish the action and send the input to the next action return done(null, input);",
       "deactivate": false,
     },
     {
       "conditions": [],
       "type": "code",
       "_id": "61b06936ce49290013588059",
-      "script": "/* Add Contact to Realm */ // Load packages // const _ = require('lodash'); const async = require('async'); // Get input data needed const { interactionRealms, contacts } = input; // Set up request headers const headers = { 'Content-Type': 'application/json; charset=utf-8' }; // Set up results structures to return info to the next step const result = {}; const successfulContacts = []; // Function to execute on each contact function updateRealms(contact, index, next) { const contactRealms = contact.realms; const newRealms = contactRealms.concat(interactionRealms); const body = { realms: newRealms }; $fluro.api.put(`/content/contact/${contact._id}`, body, headers) .then(() => { successfulContacts.push(contact._id); next(); }) .catch((err) => next(err)); } // Callback function — after all iterations are finished function callback(err) { if (err) { const errorMessage = $fluro.utils.errorMessage(err); return done(errorMessage, 'STOP'); } // Return results result.successfulContacts = successfulContacts; input.result = result; return done(null, input); } // Run the async functions return async.forEachOfSeries(contacts, updateRealms, callback);",
+      "script": "/* Add Contact to Realm */ // Load packages const forEachOfSeries = require('async/forEachOfSeries'); // Get input data needed const { interactionRealms, contacts } = input; // Set up request headers const headers = { 'Content-Type': 'application/json; charset=utf-8' }; // Set up results structures to return info to the next step const result = {}; const successfulContacts = []; // Function to execute on each contact function updateRealms(contact, index, next) { const contactRealms = contact.realms; const newRealms = contactRealms.concat(interactionRealms); const body = { realms: newRealms }; $fluro.api.put(`/content/contact/${contact._id}`, body, headers) .then(() => { successfulContacts.push(contact._id); next(); }) .catch((err) => next(err)); } // Callback function — after all iterations are finished function callback(err) { if (err) { const errorMessage = $fluro.utils.errorMessage(err); return done(errorMessage, 'STOP'); } // Return results result.successfulContacts = successfulContacts; input.result = result; return done(null, input); } // Run the async functions return forEachOfSeries(contacts, updateRealms, callback);",
       "deactivate": false,
     },
     {
@@ -155,7 +155,7 @@
   },
   "updatedBy": "Sam Rae",
   "created": "2021-07-13T05:29:06.599Z",
-  "updated": "2022-04-02T14:35:08.893Z",
+  "updated": "2022-04-05T06:01:31.662Z",
   "tests": [
     {
       "_id": "61b16f3893f1190a2c5b7818",

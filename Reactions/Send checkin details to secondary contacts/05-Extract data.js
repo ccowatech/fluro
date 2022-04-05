@@ -3,7 +3,7 @@ Extract the data we need.
 */
 
 // Load packages
-const _ = require('lodash');
+const has = require('lodash/has');
 
 // Get interaction info
 const { interaction } = input;
@@ -23,7 +23,7 @@ const formattedInteraction = {
 let primaryContact;
 const secondaryContacts = {};
 
-if (!_.has(interaction.rawData, 'contact')) {
+if (!has(interaction.rawData, 'contact')) {
     // If no contacts attached to this interaction, stop the Reaction
     return done(null, 'STOP');
 }

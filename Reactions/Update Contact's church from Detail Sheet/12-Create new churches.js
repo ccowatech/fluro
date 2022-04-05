@@ -5,8 +5,8 @@ Create new churches if necessary
 */
 
 // // Load packages
-// const _ = require('lodash');
-// const async = require('async');
+// const has = require('lodash/has');
+// const forEachOfSeries = require('async/forEachOfSeries');
 
 // // Set up request headers
 // const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -22,14 +22,14 @@ Create new churches if necessary
 //     const thisContactAndChurch = contactsAndChurches[contacts[i]];
 
 //     // If contact has said their church is not listed
-//     if (_.has(thisContactAndChurch 'churchNotListedName')) {
+//     if (has(thisContactAndChurch 'churchNotListedName')) {
 //         const newChurch = {};
 //         const newChurchName = thisContactAndChurch.churchNotListedName;
 //         const contactsToAdd = [];
 //         const contactToAdd = thisContactAndChurch.contact;
 
 //         // If church name is not in the array already
-//         if (!_.has(newChurchNamesAndContacts, newChurchName)) {
+//         if (!has(newChurchNamesAndContacts, newChurchName)) {
 //             // Add the church name and contact to the list
 //             newChurch.newChurchName = newChurchName;
 //             contactsToAdd.push(contactToAdd);
@@ -129,4 +129,4 @@ Create new churches if necessary
 // return async.forEachOfSeries(newChurchNamesAndContacts,
 // searchForChurch, searchForChurchCallback);
 
-// // return async.forEachOfSeries(newChurchNamesToCreate, createChurch, createChurchCallback);
+// // return forEachOfSeries(newChurchNamesToCreate, createChurch, createChurchCallback);

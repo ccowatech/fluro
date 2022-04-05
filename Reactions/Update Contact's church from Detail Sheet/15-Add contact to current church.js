@@ -3,7 +3,7 @@ Add contacts to their current church (current church as determined from the Deta
 */
 
 // Load packages
-const async = require('async');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up headers
 // Set up request headers
@@ -68,4 +68,4 @@ function joinGroupCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(contactsAndChurchToAdd, joinGroup, joinGroupCallback);
+return forEachOfSeries(contactsAndChurchToAdd, joinGroup, joinGroupCallback);

@@ -3,8 +3,8 @@ Retrieve titles for the churches on the detail sheets
 */
 
 // Load packages
-const _ = require('lodash');
-const async = require('async');
+const has = require('lodash/has');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Get input data needed
 const { contacts, contactsAndChurches } = input;
@@ -17,7 +17,7 @@ for (let i = 0; i < contacts.length; i += 1) {
     const thisContactAndChurch = contactsAndChurches[contacts[i]];
 
     // If there's a church reference on the detail sheet
-    if (_.has(thisContactAndChurch, 'churchOnDetailSheet')) {
+    if (has(thisContactAndChurch, 'churchOnDetailSheet')) {
         // Add the contact and church ID to an array to process
         contactsAndChurchesToLookUp.push({
             contact: contacts[i],
@@ -52,7 +52,7 @@ function lookUpChurchTitleCallback(err) {
 }
 
 // Run the async functions
-return async.forEachOfSeries(
+return forEachOfSeries(
     contactsAndChurchesToLookUp,
     lookUpChurchTitle,
     lookUpChurchTitleCallback

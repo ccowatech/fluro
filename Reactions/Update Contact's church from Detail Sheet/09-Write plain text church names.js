@@ -3,8 +3,8 @@ Update detail sheets to include a plain text church title
 */
 
 // Load packages
-const _ = require('lodash');
-const async = require('async');
+const has = require('lodash/has');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up request headers
 const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -20,7 +20,7 @@ for (let i = 0; i < contacts.length; i += 1) {
     const thisContact = contactsAndChurches[contacts[i]];
 
     // If the church title has been retrieved
-    if (_.has(thisContact, 'churchOnDetailSheetTitle')) {
+    if (has(thisContact, 'churchOnDetailSheetTitle')) {
         // Add the detail sheet, and church to an array to process
         detailSheetsToUpdate.push({
             detailSheet: thisContact.detailSheet,
@@ -54,4 +54,4 @@ function updateDetailSheetCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);
+return forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);

@@ -3,13 +3,13 @@ Retrieve the required data
 */
 
 // Load packages
-const _ = require('lodash');
+const has = require('lodash/has');
 
 // Get input we need
 const { interaction, inputType } = input;
 
 // Check that a Transaction and a Contact are attached to this Interaction.
-if (!_.has(interaction, 'transactions') || !_.has(interaction, 'contacts')) {
+if (!has(interaction, 'transactions') || !has(interaction, 'contacts')) {
     // If there's no transaction or contact, stop the Reaction
     return done(null, 'STOP');
 }

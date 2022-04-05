@@ -3,7 +3,7 @@ Remove contacts from churches that they're no longer in
 */
 
 // Load packages
-const async = require('async');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up results structures to return info to the next step
 const result = {};
@@ -61,4 +61,4 @@ function leaveGroupCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(contactAndChurchCombosToRemove, leaveGroup, leaveGroupCallback);
+return forEachOfSeries(contactAndChurchCombosToRemove, leaveGroup, leaveGroupCallback);

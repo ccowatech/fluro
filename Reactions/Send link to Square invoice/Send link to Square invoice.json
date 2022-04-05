@@ -102,7 +102,7 @@
       "type": "code",
       "_id": "61f550195b9b1d0011e90253",
       "deactivate": false,
-      "script": "/* Retrieve the required data */ // Load packages const _ = require('lodash'); // Get input we need const { interaction, inputType } = input; // Check that a Transaction and a Contact are attached to this Interaction. if (!_.has(interaction, 'transactions') || !_.has(interaction, 'contacts')) { // If there's no transaction or contact, stop the Reaction return done(null, 'STOP'); } // Find all the data needed for the next steps const { receiptUrl, cardDetails: { statementDescription } } = interaction.transactions[0].transactionData.payment; const { title: formTitle, realms: formRealms } = interaction; const formRealm = formRealms[0]; const interactionLink = `https://app.fluro.io/list/interaction/${interaction.definition}/${input.interaction._id}/edit`; const transactionLink = `https://app.fluro.io/list/transaction/${interaction.transactions[0]._id}/edit`; const contact = interaction.contacts[0]; // Format input nicely for next steps input = { formTitle, formRealm, receiptUrl, statementDescription, interactionLink, transactionLink, contact, inputType }; // Finish the action and send the input to the next action return done(null, input);",
+      "script": "/* Retrieve the required data */ // Load packages const has = require('lodash/has'); // Get input we need const { interaction, inputType } = input; // Check that a Transaction and a Contact are attached to this Interaction. if (!has(interaction, 'transactions') || !has(interaction, 'contacts')) { // If there's no transaction or contact, stop the Reaction return done(null, 'STOP'); } // Find all the data needed for the next steps const { receiptUrl, cardDetails: { statementDescription } } = interaction.transactions[0].transactionData.payment; const { title: formTitle, realms: formRealms } = interaction; const formRealm = formRealms[0]; const interactionLink = `https://app.fluro.io/list/interaction/${interaction.definition}/${input.interaction._id}/edit`; const transactionLink = `https://app.fluro.io/list/transaction/${interaction.transactions[0]._id}/edit`; const contact = interaction.contacts[0]; // Format input nicely for next steps input = { formTitle, formRealm, receiptUrl, statementDescription, interactionLink, transactionLink, contact, inputType }; // Finish the action and send the input to the next action return done(null, input);",
     },
     {
       "conditions": [],
@@ -259,7 +259,7 @@
       "_type": "reaction",
       "updatedBy": "Sam Rae",
       "created": "2022-01-25T16:08:16.144Z",
-      "updated": "2022-04-02T05:05:40.035Z",
+      "updated": "2022-04-05T06:07:28.605Z",
       "apikey": "$2a$10$36TcMneEPx7POOeNib.amuHilzuaCT9CdBQAbXHdd6f2If4c8d/qO",
       "data": {},
       "statDates": {

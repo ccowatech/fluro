@@ -3,7 +3,7 @@ Put tickets under each contact
 */
 
 // Load packages
-const _ = require('lodash');
+const has = require('lodash/has');
 
 const {
     interaction,
@@ -21,11 +21,11 @@ if (tickets.length < 1) {
 // Put tickets under each contact
 for (let i = 0; i < tickets.length; i += 1) {
     // If the ticket is active and there is an associated event
-    if (tickets[i].status === 'active' && _.has(tickets[i], 'event')) {
+    if (tickets[i].status === 'active' && has(tickets[i], 'event')) {
         // If the contact is a secondary contact
-        if (_.has(secondaryContacts, tickets[i].contact._id)) {
+        if (has(secondaryContacts, tickets[i].contact._id)) {
             // If the contact does not already have a ticket array, create it
-            if (!_.has(secondaryContacts[tickets[i].contact._id], 'tickets')) {
+            if (!has(secondaryContacts[tickets[i].contact._id], 'tickets')) {
                 secondaryContacts[tickets[i].contact._id].tickets = [];
             }
 

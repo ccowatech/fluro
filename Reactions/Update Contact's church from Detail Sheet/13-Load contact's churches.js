@@ -3,7 +3,7 @@ Load the churches that each contact is in
 */
 
 // Load packages
-const async = require('async');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up request headers
 const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -52,4 +52,4 @@ function listGroupsCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(contactsAndChurches, listGroups, listGroupsCallback);
+return forEachOfSeries(contactsAndChurches, listGroups, listGroupsCallback);

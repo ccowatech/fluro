@@ -3,8 +3,8 @@ Email each extra attendee with ticket details
 */
 
 // Load packages
-const _ = require('lodash');
-const async = require('async');
+const has = require('lodash/has');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up request headers
 const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -13,9 +13,7 @@ const headers = { 'Content-Type': 'application/json; charset=utf-8' };
 const results = [];
 
 // Get input data needed
-const interaction = _.get(input, 'interaction');
-const primaryContact = _.get(input, 'primaryContact');
-const secondaryContacts = _.get(input, 'secondaryContacts');
+const { interaction, primaryContact, secondaryContacts } = input;
 
 const ticketURL = `http://tickets.fluro.io/interaction/${interaction._id}`;
 const interactionURL = `https://app.fluro.io/list/interaction/${interaction.definition}/${interaction._id}/edit`;
@@ -25,7 +23,7 @@ const secondaryContactIDs = Object.keys(secondaryContacts);
 const secondaryContactsWithTickets = {};
 
 for (let i = 0; i < secondaryContactIDs.length; i += 1) {
-    if (_.has(secondaryContacts[secondaryContactIDs[i]], 'tickets')) {
+    if (has(secondaryContacts[secondaryContactIDs[i]], 'tickets')) {
         secondaryContactsWithTickets[
             secondaryContactIDs[i]
         ] = secondaryContacts[
@@ -106,7 +104,7 @@ function emailTicketInfoCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(
+return forEachOfSeries(
     secondaryContactsWithTickets,
     emailTicketInfo,
     emailTicketInfoCallback

@@ -4,8 +4,9 @@ find exact matches for churches that already exist
 */
 
 // Load packages
-const _ = require('lodash');
-const async = require('async');
+const has = require('lodash/has');
+const startCase = require('lodash/startCase');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up request headers
 const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -26,7 +27,7 @@ for (let i = 0; i < contacts.length; i += 1) {
         const contactToAdd = contactsAndChurches[contacts[i]].contact;
 
         // If church name is not in the array already
-        if (!_.has(newChurchNamesAndContacts, newChurchName)) {
+        if (!has(newChurchNamesAndContacts, newChurchName)) {
             // Add the church name and contact to the list
             contactsToAdd.push(contactToAdd);
 
@@ -71,7 +72,7 @@ function searchForChurch({ newChurchName, contacts: contactsList }, index, next)
                 // Remove the matched church from the list of new churchOnDetailSheet
                 delete newChurchNamesAndContacts[res.data[0].title];
                 // Also try removing the church if it's just a difference of capital letter
-                delete newChurchNamesAndContacts[_.startCase(res.data[0].title)];
+                delete newChurchNamesAndContacts[startCase(res.data[0].title)];
             }
 
             next();
@@ -91,4 +92,4 @@ function searchForChurchCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);
+return forEachOfSeries(newChurchNamesAndContacts, searchForChurch, searchForChurchCallback);

@@ -3,8 +3,8 @@ If there's an exact match, update the detail sheet to point to the matched churc
 */
 
 // Load packages
-const _ = require('lodash');
-const async = require('async');
+const has = require('lodash/has');
+const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up request headers
 const headers = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -23,7 +23,7 @@ for (let i = 0; i < contacts.length; i += 1) {
     // If we've just found the church for the contact
     const thisContactAndChurches = contactsAndChurches[contacts[i]];
 
-    if (_.has(thisContactAndChurches, 'exactMatchChurch')) {
+    if (has(thisContactAndChurches, 'exactMatchChurch')) {
         // Add the contact, detail sheet, and church to an array to process
         detailSheetsToUpdate.push({
             contact: contacts[i],
@@ -69,4 +69,4 @@ function updateDetailSheetCallback(err) {
 }
 
 // Run the async function
-return async.forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);
+return forEachOfSeries(detailSheetsToUpdate, updateDetailSheet, updateDetailSheetCallback);
