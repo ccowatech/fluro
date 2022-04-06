@@ -1,12 +1,12 @@
 /*
-Get tickets related to these contacts and this interaction
+Get tickets related to this interaction
 */
 
 // Set up results structures to return info to the next step]
 const tickets = [];
 
 // Get input data needed
-const { interactionID } = input;
+const interactionID = input.interaction._id;
 
 /*
 GET https://api.fluro.io/tickets/:connection/:connectionID
@@ -19,7 +19,11 @@ Options are
 /tickets/event/<EVENTID>
 */
 $fluro.api.get(`/tickets/interaction/${interactionID}`)
-    .then((res) => tickets.push(res.data))
+    .then((res) => {
+        for (let i = 0; i < res.data.length; i += 1) {
+            tickets.push(res.data[i]);
+        }
+    })
     .catch((err) => done(err, 'STOP'));
 
 // Return results

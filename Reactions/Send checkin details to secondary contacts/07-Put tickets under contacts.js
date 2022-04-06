@@ -8,10 +8,9 @@ const has = require('lodash/has');
 const {
     interaction,
     primaryContact,
-    secondaryContacts
+    secondaryContacts,
+    tickets
 } = input;
-
-const tickets = input.tickets[0];
 
 // If no tickets, stop the Reaction
 if (tickets.length < 1) {

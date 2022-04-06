@@ -49,7 +49,9 @@ for (let i = 0; i < interaction.rawData.contact.length; i += 1) {
     }
 }
 
-if (secondaryContacts.length === 0) { // No secondary contacts. This Reaction is not needed.
+// If no secondary contacts
+if (Object.keys(secondaryContacts).length === 0) {
+    // Stop the Reaction, because it is not needed
     return done(null, 'STOP');
 }
 
