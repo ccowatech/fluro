@@ -5,7 +5,6 @@ find exact matches for churches that already exist
 
 // Load packages
 const has = require('lodash/has');
-const startCase = require('lodash/startCase');
 const forEachOfSeries = require('async/forEachOfSeries');
 
 // Set up request headers
@@ -62,17 +61,21 @@ function searchForChurch({ newChurchName, contacts: contactsList }, index, next)
     // POST https://api.fluro.io/content/:type/filter
     $fluro.api.post('/content/church/filter', body, headers)
         .then((res) => {
-            if (res.data.length > 0) { // If any data is returned
+            // If any data is returned
+            if (res.data.length > 0) {
                 // Add the matched church to the contacts
                 for (let i = 0; i < contactsList.length; i += 1) {
                     const thisContact = contactsList[i];
                     contactsAndChurches[thisContact].exactMatchChurch = res.data[0]._id;
                 }
 
-                // Remove the matched church from the list of new churchOnDetailSheet
-                delete newChurchNamesAndContacts[res.data[0].title];
-                // Also try removing the church if it's just a difference of capital letter
-                delete newChurchNamesAndContacts[startCase(res.data[0].title)];
+                // Remove the matched church from the list of new churches
+                for (let i = 0; i < newChurchNamesAndContacts; i += 1) {
+                    if (newChurchNamesAndContacts[i].toLowerCase()
+                        === res.data[0].title.toLowerCase()) {
+                        newChurchNamesAndContacts.splice(i, 1);
+                    }
+                }
             }
 
             next();
