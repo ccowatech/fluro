@@ -32,7 +32,7 @@ for (let i = 0; i < interaction.rawData.contact.length; i += 1) {
     const thisContactID = interaction.data.contact[i];
     const thisContactData = interaction.rawData.contact[i];
 
-    if (interaction.rawData.contact[i].email === interaction.primaryEmail) {
+    if (thisContactData.email.toLowerCase() === interaction.primaryEmail.toLowerCase()) {
         primaryContact = {
             _id: thisContactID,
             firstName: thisContactData.firstName,
