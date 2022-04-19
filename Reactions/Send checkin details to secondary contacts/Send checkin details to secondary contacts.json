@@ -101,7 +101,7 @@
       "conditions": [],
       "type": "code",
       "_id": "622e24ad1ef900015ab2e32c",
-      "script": "/* Extract the data we need. */ // Load packages const has = require('lodash/has'); // Get interaction info const { interaction } = input; const interactionRealm = interaction.realms[0]; const formattedInteraction = { _id: interaction._id, definition: interaction.definition, realm: { title: interactionRealm.title, shortTitle: interactionRealm.data.shortTitle, email: interactionRealm.data.registrarEmail } }; // Get contact info let primaryContact; const secondaryContacts = {}; if (!has(interaction.rawData, 'contact')) { // If no contacts attached to this interaction, stop the Reaction return done(null, 'STOP'); } for (let i = 0; i < interaction.rawData.contact.length; i += 1) { const thisContactID = interaction.data.contact[i]; const thisContactData = interaction.rawData.contact[i]; if (thisContactData.email.toLowerCase() === interaction.primaryEmail.toLowerCase()) { primaryContact = { _id: thisContactID, firstName: thisContactData.firstName, lastName: thisContactData.lastName, email: thisContactData.email }; } else { secondaryContacts[thisContactID] = { _id: thisContactID, firstName: thisContactData.firstName, lastName: thisContactData.lastName, email: thisContactData.email }; } } // If no secondary contacts if (Object.keys(secondaryContacts).length === 0) { // Stop the Reaction, because it is not needed return done(null, 'STOP'); } input = { interaction: formattedInteraction, primaryContact, secondaryContacts }; return done(null, input);",
+      "script": "/* Extract the data we need. */ // Load packages const has = require('lodash/has'); // Get interaction info const { interaction } = input; const interactionRealm = interaction.realms[0]; const formattedInteraction = { _id: interaction._id, definition: interaction.definition, realm: { title: interactionRealm.title, shortTitle: interactionRealm.data.shortTitle, email: interactionRealm.data.registrarEmail } }; // Get contact info let primaryContact; const secondaryContacts = {}; if (!has(interaction.rawData, 'contact')) { // If no contacts attached to this interaction, stop the Reaction return done(null, 'STOP'); } // Sanitises email addresses // - puts to lower case // - strips leading and trailing whitespace function sanitiseEmail(email) { return email.toLowerCase().trim(); } for (let i = 0; i < interaction.rawData.contact.length; i += 1) { const thisContactID = interaction.data.contact[i]; const thisContactData = interaction.rawData.contact[i]; if (sanitiseEmail(thisContactData.email) === sanitiseEmail(interaction.primaryEmail)) { primaryContact = { _id: thisContactID, firstName: thisContactData.firstName, lastName: thisContactData.lastName, email: thisContactData.email }; } else { secondaryContacts[thisContactID] = { _id: thisContactID, firstName: thisContactData.firstName, lastName: thisContactData.lastName, email: thisContactData.email }; } } // If no secondary contacts if (Object.keys(secondaryContacts).length === 0) { // Stop the Reaction, because it is not needed return done(null, 'STOP'); } input = { interaction: formattedInteraction, primaryContact, secondaryContacts }; return done(null, input);",
       "deactivate": false,
     },
     {
@@ -109,6 +109,7 @@
       "type": "code",
       "_id": "621ca67897fa3e006288c52b",
       "script": "/* Get tickets related to this interaction */ // Set up results structures to return info to the next step] const tickets = []; // Get input data needed const interactionID = input.interaction._id; /* GET https://api.fluro.io/tickets/:connection/:connectionID DESCRIPTION Returns an array of all tickets connected to a specified content item. Options are /tickets/interaction/<INTERACTIONID> /tickets/contact/<CONTACTID> /tickets/event/<EVENTID> */ $fluro.api.get(`/tickets/interaction/${interactionID}`) .then((res) => { for (let i = 0; i < res.data.length; i += 1) { tickets.push(res.data[i]); } }) .catch((err) => done(err, 'STOP')); // Return results input.tickets = tickets; return done(null, input);",
+      "deactivate": false,
     },
     {
       "conditions": [],
@@ -185,7 +186,7 @@
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-02-21T12:38:11.188Z",
-  "updated": "2022-04-15T11:18:12.116Z",
+  "updated": "2022-04-19T13:25:12.318Z",
   "tests": [
     {
       "_id": "622f45909e42760012594a98",

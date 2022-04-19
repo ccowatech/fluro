@@ -28,11 +28,18 @@ if (!has(interaction.rawData, 'contact')) {
     return done(null, 'STOP');
 }
 
+// Sanitises email addresses
+// - puts to lower case
+// - strips leading and trailing whitespace
+function sanitiseEmail(email) {
+    return email.toLowerCase().trim();
+}
+
 for (let i = 0; i < interaction.rawData.contact.length; i += 1) {
     const thisContactID = interaction.data.contact[i];
     const thisContactData = interaction.rawData.contact[i];
 
-    if (thisContactData.email.toLowerCase() === interaction.primaryEmail.toLowerCase()) {
+    if (sanitiseEmail(thisContactData.email) === sanitiseEmail(interaction.primaryEmail)) {
         primaryContact = {
             _id: thisContactID,
             firstName: thisContactData.firstName,
