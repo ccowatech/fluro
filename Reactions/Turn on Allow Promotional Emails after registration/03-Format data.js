@@ -20,6 +20,11 @@ if (input.data._type === 'interaction' && has(input.item, 'contacts') && input.t
     inputType = 'unknown';
 }
 
+// If input type is unknown, or no contacts are attached, stop the Reaction
+if (inputType === 'unknown' || contacts.length === 0) {
+    return done(null, 'STOP');
+}
+
 // Return data
 input = {};
 input.inputType = inputType;
