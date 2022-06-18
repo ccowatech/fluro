@@ -66,8 +66,8 @@
         "teams": [],
         "emailTemplate": null,
         "senderName": "<%- get('input.fromName') %>",
-        "sender": "<%= get('input.fromEmail') %>",
-        "title": "<%= get('input.subject') %>",
+        "sender": "<%- get('input.fromEmail') %>",
+        "title": "<%- get('input.subject') %>",
         "htmlBody": "<%- get('input.body') %>"
       }
     },
@@ -84,8 +84,8 @@
         "emailAddresses": [],
         "emailTemplate": null,
         "senderName": "<%- get('input.fromName') %>",
-        "sender": "<%= get('input.fromEmail') %>",
-        "title": "<%= get('input.subject') %>",
+        "sender": "<%- get('input.fromEmail') %>",
+        "title": "<%- get('input.subject') %>",
         "htmlBody": "<%- get('input.body') %>"
       }
     }
@@ -150,7 +150,7 @@
     {
       "_id": "6229fdbdc1d919045444cc89",
       "title": "Another test object",
-      "json": "{\n\"fromName\": \"Rhianon Rae\",\n\"fromEmail\": \"rhianonrae@gmail.com\",\n\"toEmails\": \"samrae@gmail.com\",\n\"toContactIDs\": [\"5e97e0806a9f734dcdc940f1\"],\n\"subject\": \"Test email\",\n\"body\": \"<h3>Hi!</h3><p>Here is a test email</p>\"\n}",
+      "json": "{\n\"fromName\": \"Rhianon Rae\",\n\"fromEmail\": \"rhianonrae@gmail.com\",\n\"toEmails\": \"samrae@gmail.com\",\n\"toContactIDs\": [\"5e97e0806a9f734dcdc940f1\"],\n\"subject\": \"Test's email\",\n\"body\": \"<h3>Hi!</h3><p>Here is a test email</p>\"\n}",
       "testEmail": "sam@stalbans.org.au"
     }
   ],
@@ -172,7 +172,7 @@
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-03-01T10:48:52.632Z",
-  "updated": "2022-06-18T04:32:13.335Z",
+  "updated": "2022-06-18T04:55:42.882Z",
   "apikey": "$2a$10$fpZijrXH5yzELANgt6/JQOQnngBYcvNBAfhyABwIRQgT/xQWBWb5K",
   "data": {},
   "statDates": {}
