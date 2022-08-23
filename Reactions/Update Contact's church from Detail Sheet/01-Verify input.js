@@ -6,11 +6,10 @@ by their current churchDetails detail sheet.
 It sparks automatically:
 - on form submissions (Interactions)
   When registration forms are submitted with an attached
-  detail sheet, the detail sheet is update by Fluro,
+  detail sheet, the detail sheet is updated by Fluro,
   and then this Reaction picks up the data from the detail
-  sheet
-- on creation or editing of a churchDetails
-  details sheet
+  sheet (not from the form data itself)
+- on creation or editing of a churchDetails details sheet
 
 It can be sparked manually on:
 - churchDetails detail sheets

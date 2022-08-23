@@ -9,6 +9,9 @@ const has = require('lodash/has');
 const { detailSheets, contacts } = input;
 const contactsAndChurches = {};
 
+// If no detail sheets attached to the contact, stop the Reaction
+if(detailSheets.length == 0) return done(null, 'STOP');
+
 for (let i = 0; i < detailSheets.length; i += 1) {
     // Filter out all the non-churchDetails sheets inactive church detail sheets
     if (detailSheets[i].definition === 'churchDetails' && detailSheets[i].status === 'active') {

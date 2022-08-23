@@ -16,15 +16,7 @@
       "_type": "user"
     }
   ],
-  "managedOwners": [
-    {
-      "_id": "5eb14f10ff872a540dbbbe16",
-      "_type": "persona",
-      "firstName": "Sam",
-      "title": "Sam Rae",
-      "lastName": "Rae"
-    }
-  ],
+  "managedOwners": [],
   "status": "active",
   "hashtags": [],
   "_references": [],
@@ -63,7 +55,7 @@
       "conditions": [],
       "type": "code",
       "_id": "61ffdaf2c4ed611bd313f8bd",
-      "script": "/*\nThis Reaction removes a Contact from previous churches\n(Groups) and adds them to their current church as defined\nby their current churchDetails detail sheet.\n\nIt sparks automatically:\n- on form submissions (Interactions)\n  When registration forms are submitted with an attached\n  detail sheet, the detail sheet is update by Fluro,\n  and then this Reaction picks up the data from the detail\n  sheet\n- on creation or editing of a churchDetails\n  details sheet\n\nIt can be sparked manually on:\n- churchDetails detail sheets\n\nInfo:\n- This doesn't actually use any information from the form submission apart from the contact IDs.\nAll the detail sheet information is picked up from the current detail sheet as it is in Fluro.\n\n*/\n\n/*\nVerify input\n*/\n\nlet inputType;\n\n// Check what sort of input we have\nif (input.item.definition === 'churchDetails' || input.model === 'contactdetail') {\n    inputType = 'detailSheet';\n} else if (input.data._type === 'interaction') {\n    inputType = 'interaction';\n} else {\n    inputType = 'unknown';\n    return done(null, 'STOP');\n}\n\ninput.inputType = inputType;\n\nreturn done(null, input);",
+      "script": "/*\nThis Reaction removes a Contact from previous churches\n(Groups) and adds them to their current church as defined\nby their current churchDetails detail sheet.\n\nIt sparks automatically:\n- on form submissions (Interactions)\n  When registration forms are submitted with an attached\n  detail sheet, the detail sheet is updated by Fluro,\n  and then this Reaction picks up the data from the detail\n  sheet (not from the form data itself)\n- on creation or editing of a churchDetails details sheet\n\nIt can be sparked manually on:\n- churchDetails detail sheets\n\nInfo:\n- This doesn't actually use any information from the form submission apart from the contact IDs.\nAll the detail sheet information is picked up from the current detail sheet as it is in Fluro.\n\n*/\n\n/*\nVerify input\n*/\n\nlet inputType;\n\n// Check what sort of input we have\nif (input.item.definition === 'churchDetails' || input.model === 'contactdetail') {\n    inputType = 'detailSheet';\n} else if (input.data._type === 'interaction') {\n    inputType = 'interaction';\n} else {\n    inputType = 'unknown';\n    return done(null, 'STOP');\n}\n\ninput.inputType = inputType;\n\nreturn done(null, input);",
       "deactivate": false
     },
     {
@@ -105,7 +97,7 @@
       "conditions": [],
       "type": "code",
       "_id": "61fa51582c74c100170a6a0c",
-      "script": "/*\nExtract data from detail sheets that we need, clear the rest\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input\nconst { detailSheets, contacts } = input;\nconst contactsAndChurches = {};\n\nfor (let i = 0; i < detailSheets.length; i += 1) {\n    // Filter out all the non-churchDetails sheets inactive church detail sheets\n    if (detailSheets[i].definition === 'churchDetails' && detailSheets[i].status === 'active') {\n        contactsAndChurches[detailSheets[i].contact] = {\n            contact: detailSheets[i].contact,\n            detailSheet: detailSheets[i]._id,\n            attendsChurch: detailSheets[i].data.attendsChurch\n        };\n\n        if (has(detailSheets[i].data, 'churchAttending')) {\n            if (detailSheets[i].data.churchAttending != null) {\n                if (has(detailSheets[i].data.churchAttending, '_id')) {\n                    // In case churchAttending is an object with an ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending._id;\n                } else {\n                    // In case churchAttending is a string containing the ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending;\n                }\n            }\n        }\n        if (has(detailSheets[i].data, 'churchNotListedName') && has(detailSheets[i].data, 'churchIsNotListed')) {\n            if (detailSheets[i].data.churchIsNotListed === true) {\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchIsNotListed = detailSheets[i].data.churchIsNotListed;\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchNotListedName = detailSheets[i].data.churchNotListedName;\n            }\n        }\n    }\n}\n\n// Clear the input and put back what we want\ninput = {};\ninput.contacts = contacts;\ninput.contactsAndChurches = contactsAndChurches;\n\nreturn done(null, input);"
+      "script": "/*\nExtract data from detail sheets that we need, clear the rest\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input\nconst { detailSheets, contacts } = input;\nconst contactsAndChurches = {};\n\n// If no detail sheets attached to the contact, stop the Reaction\nif(detailSheets.length == 0) return done(null, 'STOP');\n\nfor (let i = 0; i < detailSheets.length; i += 1) {\n    // Filter out all the non-churchDetails sheets inactive church detail sheets\n    if (detailSheets[i].definition === 'churchDetails' && detailSheets[i].status === 'active') {\n        contactsAndChurches[detailSheets[i].contact] = {\n            contact: detailSheets[i].contact,\n            detailSheet: detailSheets[i]._id,\n            attendsChurch: detailSheets[i].data.attendsChurch\n        };\n\n        if (has(detailSheets[i].data, 'churchAttending')) {\n            if (detailSheets[i].data.churchAttending != null) {\n                if (has(detailSheets[i].data.churchAttending, '_id')) {\n                    // In case churchAttending is an object with an ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending._id;\n                } else {\n                    // In case churchAttending is a string containing the ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending;\n                }\n            }\n        }\n        if (has(detailSheets[i].data, 'churchNotListedName') && has(detailSheets[i].data, 'churchIsNotListed')) {\n            if (detailSheets[i].data.churchIsNotListed === true) {\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchIsNotListed = detailSheets[i].data.churchIsNotListed;\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchNotListedName = detailSheets[i].data.churchNotListedName;\n            }\n        }\n    }\n}\n\n// Clear the input and put back what we want\ninput = {};\ninput.contacts = contacts;\ninput.contactsAndChurches = contactsAndChurches;\n\nreturn done(null, input);"
     },
     {
       "conditions": [],
@@ -375,17 +367,11 @@
     "name": "Sam Rae",
     "_type": "user"
   },
-  "managedAuthor": {
-    "_id": "5eb14f10ff872a540dbbbe16",
-    "_type": "persona",
-    "firstName": "Sam",
-    "title": "Sam Rae",
-    "lastName": "Rae"
-  },
+  "managedAuthor": null,
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-01-31T11:06:23.988Z",
-  "updated": "2022-05-12T12:23:13.297Z",
+  "updated": "2022-08-23T11:48:26.695Z",
   "tests": [
     {
       "_id": "61f7c66d5b9b1d0011e97304",
