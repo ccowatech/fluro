@@ -25,17 +25,21 @@ Verify input
 */
 
 let inputType;
+let item;
 
 // Check what sort of input we have
 if (input.item.definition === 'churchDetails' || input.model === 'contactdetail') {
     inputType = 'detailSheet';
+    item = input.item;
 } else if (input.data._type === 'interaction') {
     inputType = 'interaction';
+    item = input.item._id;
 } else {
     inputType = 'unknown';
-    return done(null, 'STOP');
 }
 
-input.inputType = inputType;
+input = { inputType, item };
+// input.inputType = inputType;
+// input.item = item;
 
 return done(null, input);

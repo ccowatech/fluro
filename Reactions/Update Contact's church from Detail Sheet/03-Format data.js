@@ -6,19 +6,23 @@ Format data based on what it is
 const has = require('lodash/has');
 
 // Get data from input
-const { inputType } = input;
+const { inputType, item } = input;
 let contacts = [];
+let definition;
+let interactionID;
 
 // If input is a detail sheet
 if (input.inputType === 'detailSheet') {
-    contacts.push(input.item.contact);
+    contacts.push(item.contact);
 
 // If input is an Interaction
 } else if (input.inputType === 'interaction') {
     // If there are no contacts, stop the Reaction
-    if (!has(input.data.submittedData, 'contacts')) return done(null, 'STOP');
+    if (!has(item, 'contacts')) return done(null, 'STOP');
 
-    contacts = input.data.submittedData.contacts;
+    contacts = item.contacts;
+    definition = item.definition;
+    interactionID = item._id;
 }
 
 // If no contacts, stop the Reaction
@@ -27,6 +31,8 @@ if (contacts.length === 0) return done(null, 'STOP');
 // Replace input with only the data we need
 input = {
     inputType,
+    definition,
+    interactionID,
     contacts
 };
 

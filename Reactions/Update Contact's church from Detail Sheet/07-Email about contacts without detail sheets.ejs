@@ -1,0 +1,19 @@
+<h1>Contacts without detail sheets</h1>
+<p>Some contacts on a form submission have detail sheets, while others do not.</p>
+<p>You might want to check why these contacts don't have detail sheets:</p>
+
+<!-- Loop through each item in the array -->
+<ul>
+    <% for(var i = 0; i < get('input.contactsWithoutDetailSheets.length'); i++) { %>
+        <li><a href="https://app.fluro.io/list/contact/<%= get('input.contactsWithoutDetailSheets[' + i +']') %>/edit"><code><%= get('input.contactsWithoutDetailSheets[' + i +']') %></code></a></li>
+    <% } %>
+</ul>
+
+<hr>
+
+<% 
+const definition = get('input.definition');
+const interactionID = get('input.interactionID'); 
+%>
+
+<p>Links: <a href="https://app.fluro.io/list/interaction/<%= definition %>/<%= interactionID %>/edit">Form submission</a></p>

@@ -6,7 +6,7 @@ Extract data from detail sheets that we need, clear the rest
 const has = require('lodash/has');
 
 // Get input
-const { detailSheets, contacts } = input;
+const { inputType, definition, interactionID, detailSheets, contacts } = input;
 const contactsAndChurches = {};
 
 // If no detail sheets attached to the contact, stop the Reaction
@@ -46,8 +46,12 @@ for (let i = 0; i < detailSheets.length; i += 1) {
 }
 
 // Clear the input and put back what we want
-input = {};
-input.contacts = contacts;
-input.contactsAndChurches = contactsAndChurches;
+input = {
+    inputType,
+    definition,
+    interactionID,
+    contacts,
+    contactsAndChurches
+};
 
 return done(null, input);

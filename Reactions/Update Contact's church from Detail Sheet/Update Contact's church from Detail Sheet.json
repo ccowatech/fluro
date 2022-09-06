@@ -53,33 +53,48 @@
   "actions": [
     {
       "conditions": [],
+      "type": "emailaddress",
+      "_id": "631602ff1195340025b6ae3b",
+      "data": {
+        "keys": [],
+        "emailAddresses": [
+          "samrae@gmail.com"
+        ],
+        "emailTemplate": null,
+        "htmlBody": "<h3>Input:</h3>\n<pre><%= JSON.stringify(get('input')) %></pre>",
+        "title": "Input",
+        "senderName": "CCOWA",
+        "sender": ""
+      },
+      "deactivate": true
+    },
+    {
+      "conditions": [],
       "type": "code",
       "_id": "61ffdaf2c4ed611bd313f8bd",
-      "script": "/*\nThis Reaction removes a Contact from previous churches\n(Groups) and adds them to their current church as defined\nby their current churchDetails detail sheet.\n\nIt sparks automatically:\n- on form submissions (Interactions)\n  When registration forms are submitted with an attached\n  detail sheet, the detail sheet is updated by Fluro,\n  and then this Reaction picks up the data from the detail\n  sheet (not from the form data itself)\n- on creation or editing of a churchDetails details sheet\n\nIt can be sparked manually on:\n- churchDetails detail sheets\n\nInfo:\n- This doesn't actually use any information from the form submission apart from the contact IDs.\nAll the detail sheet information is picked up from the current detail sheet as it is in Fluro.\n\n*/\n\n/*\nVerify input\n*/\n\nlet inputType;\n\n// Check what sort of input we have\nif (input.item.definition === 'churchDetails' || input.model === 'contactdetail') {\n    inputType = 'detailSheet';\n} else if (input.data._type === 'interaction') {\n    inputType = 'interaction';\n} else {\n    inputType = 'unknown';\n    return done(null, 'STOP');\n}\n\ninput.inputType = inputType;\n\nreturn done(null, input);",
+      "script": "/*\nThis Reaction removes a Contact from previous churches\n(Groups) and adds them to their current church as defined\nby their current churchDetails detail sheet.\n\nIt sparks automatically:\n- on form submissions (Interactions)\n  When registration forms are submitted with an attached\n  detail sheet, the detail sheet is updated by Fluro,\n  and then this Reaction picks up the data from the detail\n  sheet (not from the form data itself)\n- on creation or editing of a churchDetails details sheet\n\nIt can be sparked manually on:\n- churchDetails detail sheets\n\nInfo:\n- This doesn't actually use any information from the form submission apart from the contact IDs.\nAll the detail sheet information is picked up from the current detail sheet as it is in Fluro.\n\n*/\n\n/*\nVerify input\n*/\n\nlet inputType;\nlet item;\n\n// Check what sort of input we have\nif (input.item.definition === 'churchDetails' || input.model === 'contactdetail') {\n    inputType = 'detailSheet';\n    item = input.item;\n} else if (input.data._type === 'interaction') {\n    inputType = 'interaction';\n    item = input.item._id;\n} else {\n    inputType = 'unknown';\n}\n\ninput = { inputType, item };\n// input.inputType = inputType;\n// input.item = item;\n\nreturn done(null, input);",
       "deactivate": false
     },
     {
-      "conditions": [
-        "inputType == \"detailSheet\""
-      ],
+      "conditions": [],
       "type": "populate",
-      "_id": "61ffdaf2c4ed611bd313f8be",
+      "_id": "63160aa7efb594002619d8aa",
       "data": {
         "keys": [
           "item"
         ],
         "populateSelect": [
-          "contact",
-          "definition"
+          "definition",
+          "contacts",
+          "contact"
         ]
-      },
-      "deactivate": false
+      }
     },
     {
       "conditions": [],
       "type": "code",
       "_id": "6200b11fe7912201934f214c",
-      "script": "/*\nFormat data based on what it is\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get data from input\nconst { inputType } = input;\nlet contacts = [];\n\n// If input is a detail sheet\nif (input.inputType === 'detailSheet') {\n    contacts.push(input.item.contact);\n\n// If input is an Interaction\n} else if (input.inputType === 'interaction') {\n    // If there are no contacts, stop the Reaction\n    if (!has(input.data.submittedData, 'contacts')) return done(null, 'STOP');\n\n    contacts = input.data.submittedData.contacts;\n}\n\n// If no contacts, stop the Reaction\nif (contacts.length === 0) return done(null, 'STOP');\n\n// Replace input with only the data we need\ninput = {\n    inputType,\n    contacts\n};\n\n// Finish the action and send the input to the next action\n\nreturn done(null, input);"
+      "script": "/*\nFormat data based on what it is\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get data from input\nconst { inputType, item } = input;\nlet contacts = [];\nlet definition;\nlet interactionID;\n\n// If input is a detail sheet\nif (input.inputType === 'detailSheet') {\n    contacts.push(item.contact);\n\n// If input is an Interaction\n} else if (input.inputType === 'interaction') {\n    // If there are no contacts, stop the Reaction\n    if (!has(item, 'contacts')) return done(null, 'STOP');\n\n    contacts = item.contacts;\n    definition = item.definition;\n    interactionID = item._id;\n}\n\n// If no contacts, stop the Reaction\nif (contacts.length === 0) return done(null, 'STOP');\n\n// Replace input with only the data we need\ninput = {\n    inputType,\n    definition,\n    interactionID,\n    contacts\n};\n\n// Finish the action and send the input to the next action\n\nreturn done(null, input);"
     },
     {
       "conditions": [],
@@ -97,7 +112,30 @@
       "conditions": [],
       "type": "code",
       "_id": "61fa51582c74c100170a6a0c",
-      "script": "/*\nExtract data from detail sheets that we need, clear the rest\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input\nconst { detailSheets, contacts } = input;\nconst contactsAndChurches = {};\n\n// If no detail sheets attached to the contact, stop the Reaction\nif(detailSheets.length == 0) return done(null, 'STOP');\n\nfor (let i = 0; i < detailSheets.length; i += 1) {\n    // Filter out all the non-churchDetails sheets inactive church detail sheets\n    if (detailSheets[i].definition === 'churchDetails' && detailSheets[i].status === 'active') {\n        contactsAndChurches[detailSheets[i].contact] = {\n            contact: detailSheets[i].contact,\n            detailSheet: detailSheets[i]._id,\n            attendsChurch: detailSheets[i].data.attendsChurch\n        };\n\n        if (has(detailSheets[i].data, 'churchAttending')) {\n            if (detailSheets[i].data.churchAttending != null) {\n                if (has(detailSheets[i].data.churchAttending, '_id')) {\n                    // In case churchAttending is an object with an ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending._id;\n                } else {\n                    // In case churchAttending is a string containing the ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending;\n                }\n            }\n        }\n        if (has(detailSheets[i].data, 'churchNotListedName') && has(detailSheets[i].data, 'churchIsNotListed')) {\n            if (detailSheets[i].data.churchIsNotListed === true) {\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchIsNotListed = detailSheets[i].data.churchIsNotListed;\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchNotListedName = detailSheets[i].data.churchNotListedName;\n            }\n        }\n    }\n}\n\n// Clear the input and put back what we want\ninput = {};\ninput.contacts = contacts;\ninput.contactsAndChurches = contactsAndChurches;\n\nreturn done(null, input);"
+      "script": "/*\nExtract data from detail sheets that we need, clear the rest\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input\nconst { inputType, definition, interactionID, detailSheets, contacts } = input;\nconst contactsAndChurches = {};\n\n// If no detail sheets attached to the contact, stop the Reaction\nif(detailSheets.length == 0) return done(null, 'STOP');\n\nfor (let i = 0; i < detailSheets.length; i += 1) {\n    // Filter out all the non-churchDetails sheets inactive church detail sheets\n    if (detailSheets[i].definition === 'churchDetails' && detailSheets[i].status === 'active') {\n        contactsAndChurches[detailSheets[i].contact] = {\n            contact: detailSheets[i].contact,\n            detailSheet: detailSheets[i]._id,\n            attendsChurch: detailSheets[i].data.attendsChurch\n        };\n\n        if (has(detailSheets[i].data, 'churchAttending')) {\n            if (detailSheets[i].data.churchAttending != null) {\n                if (has(detailSheets[i].data.churchAttending, '_id')) {\n                    // In case churchAttending is an object with an ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending._id;\n                } else {\n                    // In case churchAttending is a string containing the ID\n                    contactsAndChurches[detailSheets[i].contact]\n                        .churchOnDetailSheet = detailSheets[i].data.churchAttending;\n                }\n            }\n        }\n        if (has(detailSheets[i].data, 'churchNotListedName') && has(detailSheets[i].data, 'churchIsNotListed')) {\n            if (detailSheets[i].data.churchIsNotListed === true) {\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchIsNotListed = detailSheets[i].data.churchIsNotListed;\n                contactsAndChurches[detailSheets[i].contact]\n                    .churchNotListedName = detailSheets[i].data.churchNotListedName;\n            }\n        }\n    }\n}\n\n// Clear the input and put back what we want\ninput = {\n    inputType,\n    definition,\n    interactionID,\n    contacts,\n    contactsAndChurches\n};\n\nreturn done(null, input);"
+    },
+    {
+      "conditions": [],
+      "type": "code",
+      "_id": "63161cdce9778900266ee7b6",
+      "script": "/*\nRemove contacts from the contact array if they don't have detail sheets attached\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input data needed\nconst { inputType, definition, interactionID, contacts, contactsAndChurches } = input;\nconst contactsWithoutDetailSheets = [];\n\n// Copy contact IDs without detail sheets to new array\nfor (let i = 0; i < contacts.length; i += 1) {\n    if(!has(contactsAndChurches, contacts[i])) {\n        contactsWithoutDetailSheets.push(contacts[i]);\n    }\n}\n// Remove contact IDs without detail sheets from contact array\nfor (let i = 0; i < contactsWithoutDetailSheets.length; i += 1) {\n    contacts.pop(contactsWithoutDetailSheets[i]);  \n}\n\n// Replace input with only the data we need\ninput = {\n    inputType,\n    contacts,\n    contactsWithoutDetailSheets,\n    contactsAndChurches\n};\n\n// Finish the action and send the input to the next action\nreturn done(null, input);"
+    },
+    {
+      "conditions": [
+        "inputType == \"interaction\"",
+        "contactsWithoutDetailSheets.length > 0"
+      ],
+      "type": "emailaddress",
+      "_id": "63161cdce9778900266ee7b7",
+      "data": {
+        "keys": [],
+        "emailAddresses": [
+          "samrae@gmail.com"
+        ],
+        "emailTemplate": null,
+        "title": "Contacts without detail sheets",
+        "htmlBody": "<h1>Contacts without detail sheets</h1>\n<p>Some contacts on a form submission have detail sheets, while others do not.</p>\n<p>You might want to check why these contacts don't have detail sheets:</p>\n\n<!-- Loop through each item in the array -->\n<ul>\n    <% for(var i = 0; i < get('input.contactsWithoutDetailSheets.length'); i++) { %>\n        <li><a href=\"https://app.fluro.io/list/contact/<%= get('input.contactsWithoutDetailSheets[' + i +']') %>/edit\"><code><%= get('input.contactsWithoutDetailSheets[' + i +']') %></code></a></li>\n    <% } %>\n</ul>\n\n<hr>\n\n<% \nconst definition = get('input.definition');\nconst interactionID = get('input.interactionID'); \n%>\n\n<p>Links: <a href=\"https://app.fluro.io/list/interaction/<%= definition %>/<%= interactionID %>/edit\">Form submission</a></p>"
+      }
     },
     {
       "conditions": [],
@@ -371,7 +409,7 @@
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-01-31T11:06:23.988Z",
-  "updated": "2022-08-23T11:48:26.695Z",
+  "updated": "2022-09-06T12:20:33.827Z",
   "tests": [
     {
       "_id": "61f7c66d5b9b1d0011e97304",
@@ -438,6 +476,18 @@
       "title": "Submit wrong type of details sheet via form",
       "json": "{\"account\":\"5e82a7cd281d6602b698b481\",\"user\":{\"_id\":\"5eff0aa041a86b0cfbe961c5\",\"accountType\":\"application\"},\"item\":\"621f2eea0381be0035a19de6\",\"data\":{\"_type\":\"interaction\",\"definition\":\"pmcKeyContactForm\",\"submittedData\":{\"title\":\"PMC Key Contact Form\",\"data\":{\"contact\":\"5e97e0806a9f734dcdc940f1\"},\"realms\":[\"5e82a7cd281d6602b698b484\"],\"rawData\":{\"contact\":{\"details\":{\"pmcDetails\":{\"data\":{\"pmcKeyContact\":{\"churchname\":\"St Alban's Anglican Church\",\"numberBrochures\":\"25\",\"street\":\"37a Third Ave\",\"suburb\":\"Bassendean\",\"state\":\"WA\",\"postcode\":\"6054\"}}}},\"firstName\":\"Sam\",\"lastName\":\"Rae\",\"email\":\"samrae@gmail.com\",\"phoneNumber\":\"0439769319\"}},\"connectionData\":{\"ip\":{\"clientIp\":\"144.139.213.249\",\"clientIpRoutable\":true}},\"applicationAuthor\":\"5eff0aa041a86b0cfbe961c5\",\"account\":\"5e82a7cd281d6602b698b481\",\"primaryEmail\":\"samrae@gmail.com\",\"contact\":null,\"contacts\":[\"5e97e0806a9f734dcdc940f1\"],\"attemptLog\":\"621f2ee70381be0035a19ddc\",\"mentions\":[],\"hashtags\":[],\"_type\":\"interaction\",\"definition\":\"pmcKeyContactForm\"}},\"key\":\"content.create\",\"trigger\":\"content.create\",\"message\":\"Created PMC Key Contact Form\",\"model\":\"interaction\"}",
       "testEmail": "sam@stalbans.org.au"
+    },
+    {
+      "_id": "6315f9c3a631a70026aa04ac",
+      "title": "Detail sheet that didn’t work 2022-09-02",
+      "json": "{\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"user\": {\n        \"_id\": \"62028c18e7912201934f8b9d\",\n        \"accountType\": \"application\"\n      },\n      \"item\": \"6311607b47af380025d080be\",\n      \"data\": {\n        \"_type\": \"contactdetail\",\n        \"definition\": \"churchDetails\",\n        \"submittedData\": {\n          \"data\": {\n            \"attendsChurch\": \"yes\",\n            \"churchAttending\": \"5e9d1d549b953262c33e3184\"\n          },\n          \"contact\": {\n            \"title\": \"Susan Miles\",\n            \"_id\": \"6311607b47af380025d080b9\"\n          },\n          \"definition\": \"churchDetails\",\n          \"account\": \"5e82a7cd281d6602b698b481\",\n          \"status\": \"draft\",\n          \"realms\": [\n            {\n              \"_id\": \"619376c2ac6eda000f1d32cb\",\n              \"title\": \"Common\"\n            }\n          ],\n          \"mentions\": [],\n          \"hashtags\": [],\n          \"_type\": \"contactdetail\",\n          \"title\": \"Susan Miles - Church Details\"\n        }\n      },\n      \"key\": \"content.create\",\n      \"trigger\": \"content.create\",\n      \"message\": \"Created Susan Miles - Church Details\",\n      \"model\": \"contactdetail\"\n    }",
+      "testEmail": "samrae@gmail.com"
+    },
+    {
+      "_id": "6315f9c3a631a70026aa04ad",
+      "title": "Form submission that didn’t work 2022-09-02",
+      "json": "{\n    \"data\": {\n        \"_type\":\"interaction\"\n    },\n    \"item\": {\n        \"_id\": \"6311608047af380025d080f6\"\n    }\n}",
+      "testEmail": "samrae@gmail.com"
     }
   ],
   "apikey": "$2a$10$M8ynMn0.2YHNgE1PJHMgMuhcP9SLn0NZ4dVcHtvfgowv05Rha9LYO",
