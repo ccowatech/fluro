@@ -61,7 +61,7 @@
           "samrae@gmail.com"
         ],
         "emailTemplate": null,
-        "htmlBody": "<h3>Input:</h3>\n<pre><%= JSON.stringify(get('input')) %></pre>",
+        "htmlBody": "<h3>Input:</h3>\n<pre><%= JSON.stringify(get('input'), null, 2) %></pre>",
         "title": "Input",
         "senderName": "CCOWA",
         "sender": ""
@@ -409,7 +409,7 @@
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-01-31T11:06:23.988Z",
-  "updated": "2022-09-06T12:20:33.827Z",
+  "updated": "2022-09-06T12:45:28.181Z",
   "tests": [
     {
       "_id": "61f7c66d5b9b1d0011e97304",
