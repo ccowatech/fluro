@@ -35,28 +35,34 @@ function sanitiseEmail(email) {
     return email.toLowerCase().trim();
 }
 
+// Loop through all the contacts
 for (let i = 0; i < interaction.rawData.contact.length; i += 1) {
     const thisContactID = interaction.data.contact[i];
     const thisContactData = interaction.rawData.contact[i];
 
-    if (sanitiseEmail(thisContactData.email) === sanitiseEmail(interaction.primaryEmail)) {
-        primaryContact = {
-            _id: thisContactID,
-            firstName: thisContactData.firstName,
-            lastName: thisContactData.lastName,
-            email: thisContactData.email
-        };
-    } else {
-        secondaryContacts[thisContactID] = {
-            _id: thisContactID,
-            firstName: thisContactData.firstName,
-            lastName: thisContactData.lastName,
-            email: thisContactData.email
-        };
+    // If the current contact has an email address, see if it matchces the primary contact
+    if (has(thisContactData, 'email')) {
+        // If primary contact, set primary contact data
+        if (sanitiseEmail(thisContactData.email) === sanitiseEmail(interaction.primaryEmail)) {
+            primaryContact = {
+                _id: thisContactID,
+                firstName: thisContactData.firstName,
+                lastName: thisContactData.lastName,
+                email: thisContactData.email
+            };
+        // If secondary contact, add to secondary contacts array
+        } else {
+            secondaryContacts[thisContactID] = {
+                _id: thisContactID,
+                firstName: thisContactData.firstName,
+                lastName: thisContactData.lastName,
+                email: thisContactData.email
+            };
+        }
     }
 }
 
-// If no secondary contacts
+// If no secondary contacts with email addresses
 if (Object.keys(secondaryContacts).length === 0) {
     // Stop the Reaction, because it is not needed
     return done(null, 'STOP');
