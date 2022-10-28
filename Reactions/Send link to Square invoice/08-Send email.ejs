@@ -1,12 +1,12 @@
 <h2>Thanks for your payment!</h2>
-<h4>Your payment for <%= get('input.formTitle') %> has been succesful.</h4>
+<h4>Your payment for <%- get('input.formTitle') %> has been succesful.</h4>
 <hr/>
 <p>Your receipt from Square, our payment processor, is available here:</p>
-<p><b><a href="<%= get('input.receiptUrl') %>">View your Invoice/Receipt</a></b></p>
+<p><b><a href="<%- get('input.receiptUrl') %>">View your Invoice/Receipt</a></b></p>
 
 <p>
-No GST is charged on convention registrations.<br/>
-The payment will appear on your bank account as <%= get('input.statementDescription') %>
+No GST is charged on convention registrations or donations.<br/>
+The payment will appear on your bank account as <%- get('input.statementDescription') %>
 </p>
 <hr/>
 <h4>Problem?</h4>
@@ -19,5 +19,4 @@ info@ccowa.org</small></p>
 
 <p style="color:#AAA;"><small>
 Admin links: 
-<a href="<%= get('input.interactionLink') %>">Form submission</a> | <a href="<%= get('input.transactionLink') %>">Transaction</a>
-</small></p>
+<a href="<%- get('input.interactionLink') %>">Form submission</a> | <a href="<%- get('input.transactionLink') %>">Transaction</a>
