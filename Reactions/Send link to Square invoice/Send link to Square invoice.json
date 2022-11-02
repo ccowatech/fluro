@@ -126,68 +126,7 @@
         "keys": [
           "contact"
         ],
-        "contacts": [
-          {
-            "_id": "5e97e0806a9f734dcdc940f1",
-            "owners": [],
-            "managedOwners": [],
-            "realms": [
-              "5e82a7cd281d6602b698b484",
-              "6088c1cb87f82418764b7114",
-              "5e97abd48beea3051136186f",
-              "5e82a7cd281d6602b698b482",
-              "5e82a7cd281d6602b698b486",
-              "5e82a7ce281d6602b698b488",
-              "5e82a7cd281d6602b698b485",
-              "5e82a7ce281d6602b698b489",
-              "5e82a7cd281d6602b698b483",
-              "608a565b6eb42c090022c3fd",
-              "608a56b56eb42c090022d259",
-              "608a570bd9e05730879ce9c2",
-              "606ecb8ec9c89661558d0bc1",
-              "6215e2e8d7cc7c001956c492",
-              "5e9d1bf79b953262c33e187f",
-              "61f546264d66c70018d73006"
-            ],
-            "tags": [],
-            "_type": "contact",
-            "data": {
-              "futureContact": "N",
-              "import": {
-                "Name for sorting": "Rae, Samuel",
-                "Surname": "Rae",
-                "First name": "Samuel",
-                "Nametag": "Sam Rae",
-                "Category": "0",
-                "Future contact": "N",
-                "Pending": "1",
-                "Share?": "n",
-                "Email": "samrae@gmail.com",
-                "Email status": "0",
-                "Wrong": "0",
-                "Year of birth": "0",
-                "Last update when": "16/07/15 17:55",
-                "Last update who": "Teamlist web user",
-                "Record #": "158980",
-                "Member of": "pmc2015",
-                "index": 9945,
-                "Sex": "M",
-                "Church denom name": "Baptist",
-                "Church name": "Atwell Community Church",
-                "Phone(m)": "043976319",
-                "Street": "10 Radiance Link",
-                "Suburb": "Atwell",
-                "State": "WA",
-                "Postcode": "6164",
-                "DOB": "19/05/1982",
-                "Info": "St Matthew's Uni Church",
-                "Prefname": "Sam"
-              }
-            },
-            "account": "5e82a7cd281d6602b698b481",
-            "title": "Sam Rae"
-          }
-        ],
+        "contacts": [],
         "teams": [],
         "emailTemplate": null,
         "title": "<%- get('input.fromNameShort') %> Invoice/Receipt",
@@ -310,7 +249,7 @@
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-01-25T16:08:16.144Z",
-  "updated": "2022-10-28T03:31:21.302Z",
+  "updated": "2022-11-02T03:53:11.235Z",
   "apikey": "$2a$10$36TcMneEPx7POOeNib.amuHilzuaCT9CdBQAbXHdd6f2If4c8d/qO",
   "data": {},
   "statDates": {
