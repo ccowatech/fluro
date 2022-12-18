@@ -1,6 +1,6 @@
 /*
-This Reaction automatically sends a link to the
-Square Invoice to the first contact whenever a form is
+This Reaction automatically sends a link to the receipt provided
+by payment processors to the first contact whenever a form is
 filled out.
 */
 
