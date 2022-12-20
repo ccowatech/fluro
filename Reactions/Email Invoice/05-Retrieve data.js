@@ -4,6 +4,7 @@ Retrieve the required data
 
 // Load packages
 const has = require('lodash/has');
+const startCase = require('lodash/startCase');
 
 // Get input we need
 const { interaction, inputType } = input;
@@ -15,21 +16,18 @@ if (!has(interaction, 'transactions') || !has(interaction, 'contacts')) {
     return done(null, 'STOP');
 }
 
-const { integration, transactionData } = interaction.transactions[0];
+const { integration: { module }, transactionData } = interaction.transactions[0];
 
-// let { title, child, child: { title2 } } = obj1
+const integrationModule = startCase(module);
 
-let integrationName;
 let paymentInfo;
 let totalMoney;
 let receiptUrl;
 let statementDescription;
 
 // Get data from the right places depending on which payment processor the form used
-switch (integration) {
-case '61f00157bb22cf00141a8170': // Square
-    integrationName = 'Square';
-
+switch (integrationModule) {
+case 'Square':
     paymentInfo = transactionData.payment;
 
     totalMoney = paymentInfo.totalMoney.amount;
@@ -38,9 +36,7 @@ case '61f00157bb22cf00141a8170': // Square
 
     break;
 
-case '638311a5b304c1002553dd2b': // Stripe
-    integrationName = 'Stripe';
-
+case 'Stripe':
     paymentInfo = transactionData;
 
     totalMoney = interaction.transactions[0].total;
@@ -49,9 +45,10 @@ case '638311a5b304c1002553dd2b': // Stripe
 
     break;
 
+    // Other payment processors could be added in here in the future
+
 default:
-    // Unknown
-    integrationName = 'Unknown';
+    // Not a payment processor supported by this Reaction
 }
 
 // Get remaining data needed for the next steps
@@ -66,8 +63,7 @@ const contact = interaction.contacts[0];
 input = {
     formTitle,
     formRealm,
-    integration,
-    integrationName,
+    integrationModule,
     receiptUrl,
     statementDescription,
     interactionLink,
