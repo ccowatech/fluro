@@ -1,0 +1,71 @@
+<h2>Thanks for your payment!</h2>
+<h4>Your payment for <%- get('input.formTitle') %> has been succesful.</h4>
+<hr/>
+
+<h4>Invoice</h4>
+<table>
+    <% 
+    const paymentModifiers = get('input.paymentModifiers'); 
+    let total = 0;
+    %>
+    <% for (let i = 0; i < paymentModifiers.length; i += 1) { %>
+        <%
+            let prefix;
+            let amount;
+            let currencyAmount;
+
+            switch (paymentModifiers[i].operation) {
+                case 'add': 
+                    prefix = '+';
+                    amount = (paymentModifiers[i].value / 100).toLocaleString("en-AU", {style:"currency", currency:"AUD"});
+                break;
+                case 'subtract':
+                    prefix = '-';
+                    amount = (paymentModifiers[i].value / 100).toLocaleString("en-AU", {style:"currency", currency:"AUD"});
+                break;
+                case 'multiply':
+                    prefix = 'x';
+                    amount = paymentModifiers[i].value;
+                break;
+                case 'divide':
+                    prefix = '/';
+                    amount = paymentModifiers[i].value;
+                break;
+                case 'set':
+                    prefix = '';
+                    amount = (paymentModifiers[i].value / 100).toLocaleString("en-AU", {style:"currency", currency:"AUD"});
+                break;
+            }
+        %>
+        <tr>
+            <td><%- paymentModifiers[i].title %></td>
+            <td><%- prefix %> <%- amount %></td>
+            
+        </tr>
+    <% } %> 
+        <tr>
+            <td><strong>TOTAL</strong></td>
+            <td><strong><%- (get('input.totalMoney') / 100).toLocaleString("en-AU", {style:"currency", currency:"AUD"}) %></strong></td>
+        </tr>
+</table>
+<br/>
+<p><small>No GST is charged on convention registrations or donations.</small></p>
+<hr/>
+
+<h4>Receipt</h4>
+<p>Your receipt from <%- get('input.integrationName') %>, our payment processor, is available here:</p>
+<p><b><a href="<%- get('input.receiptUrl') %>">View your Receipt</a></b></p>
+
+<p><small>The payment will appear on your bank account as <%- get('input.statementDescription') %></small></p>
+<hr/>
+<h4>Problem?</h4>
+
+<p>For help with this payment, reply to this email, or forward it to <%= get('input.fromEmail') %>.</p>
+<hr/>
+<p><small>Christian Conventions of Western Australia<br/>
+ABN 38 223 904 915<br/>
+info@ccowa.org</small></p>
+
+<p style="color:#AAA;"><small>
+Admin links: 
+<a href="<%- get('input.interactionLink') %>">Form submission</a> | <a href="<%- get('input.transactionLink') %>">Transaction</a></small></p>

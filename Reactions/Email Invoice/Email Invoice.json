@@ -1,0 +1,343 @@
+{
+  "_id": "63a17ce1f34c2d00251d4e9f",
+  "apikey_unique": {
+  "type": "Point",
+  "coordinates": [
+  0,
+  0
+  ]
+  },
+  "owners": [
+  {
+  "_id": "5d244cfc34837054a394b13b",
+  "firstName": "Sam",
+  "lastName": "Rae",
+  "name": "Sam Rae",
+  "_type": "user"
+  }
+  ],
+  "managedOwners": [
+  {
+  "_id": "62998c42ddad6a00179501f8",
+  "_type": "persona",
+  "firstName": "Sam",
+  "title": "Sam Rae",
+  "lastName": "Rae"
+  }
+  ],
+  "status": "active",
+  "hashtags": [],
+  "_references": [],
+  "mentions": [],
+  "keywords": [
+  "common"
+  ],
+  "privacy": "secure",
+  "triggers": [
+  "content.create"
+  ],
+  "conditions": [
+  "input.item._type == 'interaction'",
+  "input.data.submittedData.hasOwnProperty('transactions')"
+  ],
+  "contacts": [],
+  "teams": [],
+  "integrations": [],
+  "items": [],
+  "styles": [],
+  "realms": [
+  {
+  "_id": "619376c2ac6eda000f1d32cb",
+  "_type": "realm",
+  "title": "Common",
+  "slug": "realm-common",
+  "bgColor": "#29AA5CFF",
+  "color": "#FFFFFFFF"
+  }
+  ],
+  "policies": [],
+  "developmentMode": false,
+  "tags": [],
+  "actions": [
+  {
+  "conditions": [],
+  "type": "code",
+  "_id": "61f52662cea4ea0013ddefdd",
+  "script": "/*\nThis Reaction sends an invoice to the primary contact after a form submission with a contact and a transaction.\n*/\n\n/*\nGet Interaction ID\n*/\n\nlet inputType;\nlet interaction;\n\nif (input.trigger === 'manual.spark' && input.data._type === 'interaction') {\n    inputType = 'manualInteraction';\n    interaction = input.item._id;\n} else if (input.trigger === 'content.create' && input.data._type === 'interaction') {\n    inputType = 'autoInteraction';\n    interaction = input.item;\n} else {\n    inputType = 'unknown';\n}\n\n// Clear input and put back what we need\ninput = {};\ninput.interaction = interaction;\ninput.inputType = inputType;\n\n// Finish the action and send the input to the next action\nreturn done(null, input);",
+  "deactivate": false
+  },
+  {
+  "conditions": [
+  "inputType === 'unknown'"
+  ],
+  "type": "stop",
+  "_id": "6241bfc1a5cbb8019fc29ad5"
+  },
+  {
+  "conditions": [],
+  "type": "populate",
+  "_id": "61f550195b9b1d0011e90251",
+  "data": {
+  "keys": [
+  "interaction"
+  ],
+  "populateSelect": []
+  },
+  "deactivate": false
+  },
+  {
+  "conditions": [],
+  "type": "populate",
+  "_id": "6241bfc1a5cbb8019fc29ad7",
+  "data": {
+  "keys": [
+  "interaction.transactions"
+  ],
+  "populateSelect": [],
+  "databaseTable": "transaction"
+  }
+  },
+  {
+  "conditions": [],
+  "type": "code",
+  "_id": "61f550195b9b1d0011e90253",
+  "deactivate": false,
+  "script": "/*\nRetrieve the required data\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input we need\nconst { interaction, inputType } = input;\nconst { paymentModifiers } = interaction;\n\n// Check that a Transaction and a Contact are attached to this Interaction.\nif (!has(interaction, 'transactions') || !has(interaction, 'contacts')) {\n    // If there are no transactions or no contacts, stop the Reaction\n    return done(null, 'STOP');\n}\n\nconst { integration, transactionData } = interaction.transactions[0];\n\n// let { title, child, child: { title2 } } = obj1\n\nlet integrationName;\nlet paymentInfo;\nlet totalMoney;\nlet receiptUrl;\nlet statementDescription;\n\n// Get data from the right places depending on which payment processor the form used\nswitch (integration) {\ncase '61f00157bb22cf00141a8170': // Square\n    integrationName = 'Square';\n\n    paymentInfo = transactionData.payment;\n\n    totalMoney = paymentInfo.totalMoney.amount;\n    receiptUrl = paymentInfo.receiptUrl;\n    statementDescription = paymentInfo.cardDetails.statementDescription;\n\n    break;\n\ncase '638311a5b304c1002553dd2b': // Stripe\n    integrationName = 'Stripe';\n\n    paymentInfo = transactionData;\n\n    totalMoney = interaction.transactions[0].total;\n    receiptUrl = paymentInfo.receipt_url;\n    statementDescription = paymentInfo.calculated_statement_descriptor;\n\n    break;\n\ndefault:\n    // Unknown\n    integrationName = 'Unknown';\n}\n\n// Get remaining data needed for the next steps\nconst { title: formTitle, realms: formRealms } = interaction;\nconst formRealm = formRealms[0];\n\nconst interactionLink = `https://app.fluro.io/list/interaction/${interaction.definition}/${input.interaction._id}/edit`;\nconst transactionLink = `https://app.fluro.io/list/transaction/${interaction.transactions[0]._id}/edit`;\nconst contact = interaction.contacts[0];\n\n// Format input nicely for next steps\ninput = {\n    formTitle,\n    formRealm,\n    integration,\n    integrationName,\n    receiptUrl,\n    statementDescription,\n    interactionLink,\n    transactionLink,\n    contact,\n    inputType,\n    paymentModifiers,\n    totalMoney\n};\n\n// Finish the action and send the input to the next action\nreturn done(null, input);"
+  },
+  {
+  "conditions": [
+  "integrationName === 'Unknown'"
+  ],
+  "type": "stop",
+  "_id": "639ef8e1751eff0025460fb6"
+  },
+  {
+  "conditions": [],
+  "type": "populate",
+  "_id": "61f52662cea4ea0013ddefe3",
+  "data": {
+  "keys": [
+  "formRealm"
+  ],
+  "populateSelect": []
+  },
+  "deactivate": false
+  },
+  {
+  "conditions": [],
+  "type": "code",
+  "_id": "61f52662cea4ea0013ddefe4",
+  "data": {
+  "keys": []
+  },
+  "script": "/*\nSet email variables based on Realm\n*/\n\nlet fromEmail;\nlet fromNameFull;\nlet fromNameShort;\n\nif (input.formRealm.definition === 'convention') {\n    fromEmail = input.formRealm.data.registrarEmail;\n    fromNameFull = input.formRealm.title;\n    fromNameShort = input.formRealm.data.shortTitle;\n} else {\n    fromEmail = 'bookkeeper@ccowa.org';\n    fromNameFull = 'Christian Conventions of Western Australia';\n    fromNameShort = 'CCOWA';\n}\n\n// Add contact email to input\ndelete input.formRealm;\ninput.fromEmail = fromEmail;\ninput.fromNameFull = fromNameFull;\ninput.fromNameShort = fromNameShort;\n\n// Finish the action and send the input to the next action\nreturn done(null, input);",
+  "deactivate": false
+  },
+  {
+  "conditions": [],
+  "type": "email",
+  "_id": "61f02aa9bb22cf00141a8290",
+  "data": {
+  "keys": [],
+  "contacts": [
+  {
+  "_id": "5e97e0806a9f734dcdc940f1",
+  "owners": [],
+  "managedOwners": [],
+  "realms": [
+  "5e82a7cd281d6602b698b484",
+  "6088c1cb87f82418764b7114",
+  "5e97abd48beea3051136186f",
+  "5e82a7cd281d6602b698b482",
+  "5e82a7cd281d6602b698b486",
+  "5e82a7ce281d6602b698b488",
+  "5e82a7cd281d6602b698b485",
+  "5e82a7ce281d6602b698b489",
+  "5e82a7cd281d6602b698b483",
+  "608a565b6eb42c090022c3fd",
+  "608a56b56eb42c090022d259",
+  "608a570bd9e05730879ce9c2",
+  "606ecb8ec9c89661558d0bc1",
+  "6215e2e8d7cc7c001956c492",
+  "5e9d1bf79b953262c33e187f",
+  "61f546264d66c70018d73006"
+  ],
+  "tags": [],
+  "_type": "contact",
+  "data": {
+  "futureContact": "N",
+  "import": {
+  "index": 9945,
+  "nameForSorting": "Rae, Samuel",
+  "surname": "Rae",
+  "firstName": "Samuel",
+  "nametag": "Sam Rae",
+  "category": "0",
+  "futureContact": "N",
+  "pending": "1",
+  "share": "n",
+  "email": "samrae@gmail.com",
+  "emailStatus": "0",
+  "wrong": "0",
+  "yearOfBirth": "0",
+  "lastUpdateWhen": "16/07/15 17:55",
+  "lastUpdateWho": "Teamlist web user",
+  "record": "158980",
+  "memberOf": "pmc2015",
+  "sex": "M",
+  "churchDenomName": "Baptist",
+  "churchName": "Atwell Community Church",
+  "phoneM": "043976319",
+  "street": "10 Radiance Link",
+  "suburb": "Atwell",
+  "state": "WA",
+  "postcode": "6164",
+  "dob": "19/05/1982",
+  "info": "St Matthew's Uni Church",
+  "prefname": "Sam"
+  }
+  },
+  "account": "5e82a7cd281d6602b698b481",
+  "title": "Sam Rae"
+  }
+  ],
+  "teams": [],
+  "emailTemplate": null,
+  "title": "<%- get('input.fromNameShort') %> Receipt",
+  "htmlBody": "<h2>Thanks for your payment!</h2>\n<h4>Your payment for <%- get('input.formTitle') %> has been succesful.</h4>\n<hr/>\n\n<h4>Invoice</h4>\n<table>\n    <% \n    const paymentModifiers = get('input.paymentModifiers'); \n    let total = 0;\n    %>\n    <% for (let i = 0; i < paymentModifiers.length; i += 1) { %>\n        <%\n            let prefix;\n            let amount;\n            let currencyAmount;\n\n            switch (paymentModifiers[i].operation) {\n                case 'add': \n                    prefix = '+';\n                    amount = (paymentModifiers[i].value / 100).toLocaleString(\"en-AU\", {style:\"currency\", currency:\"AUD\"});\n                break;\n                case 'subtract':\n                    prefix = '-';\n                    amount = (paymentModifiers[i].value / 100).toLocaleString(\"en-AU\", {style:\"currency\", currency:\"AUD\"});\n                break;\n                case 'multiply':\n                    prefix = 'x';\n                    amount = paymentModifiers[i].value;\n                break;\n                case 'divide':\n                    prefix = '/';\n                    amount = paymentModifiers[i].value;\n                break;\n                case 'set':\n                    prefix = '';\n                    amount = (paymentModifiers[i].value / 100).toLocaleString(\"en-AU\", {style:\"currency\", currency:\"AUD\"});\n                break;\n            }\n        %>\n        <tr>\n            <td><%- paymentModifiers[i].title %></td>\n            <td><%- prefix %> <%- amount %></td>\n            \n        </tr>\n    <% } %> \n        <tr>\n            <td><strong>TOTAL</strong></td>\n            <td><strong><%- (get('input.totalMoney') / 100).toLocaleString(\"en-AU\", {style:\"currency\", currency:\"AUD\"}) %></strong></td>\n        </tr>\n</table>\n<br/>\n<p><small>No GST is charged on convention registrations or donations.</small></p>\n\n<hr/>\n\n<h4>Receipt</h4>\n<p>Your receipt from <%- get('input.integrationName') %>, our payment processor, is available here:</p>\n<p><b><a href=\"<%- get('input.receiptUrl') %>\">View your Receipt</a></b></p>\n\n<p><small>The payment will appear on your bank account as <%- get('input.statementDescription') %></small></p>\n<hr/>\n<h4>Problem?</h4>\n\n<p>For help with this payment, reply to this email, or forward it to <%= get('input.fromEmail') %>.</p>\n<hr/>\n<p><small>Christian Conventions of Western Australia<br/>\nABN 38 223 904 915<br/>\ninfo@ccowa.org</small></p>\n\n<p style=\"color:#AAA;\"><small>\nAdmin links: \n<a href=\"<%- get('input.interactionLink') %>\">Form submission</a> | <a href=\"<%- get('input.transactionLink') %>\">Transaction</a></small></p>\n",
+  "sender": "<%- get('input.fromEmail') %>",
+  "senderName": "<%- get('input.fromNameFull') %>",
+  "generateToken": false
+  },
+  "deactivate": false
+  },
+  {
+  "conditions": [],
+  "type": "stop",
+  "_id": "61f02aa9bb22cf00141a8292"
+  }
+  ],
+  "permissionSets": [
+  {
+  "realms": [
+  {
+  "_id": "5e82a7cd281d6602b698b483",
+  "status": "active",
+  "title": "Christian Conventions of WA Inc",
+  "color": "#7f12b3",
+  "bgColor": "#e7b3ff",
+  "created": "2020-03-31T02:15:41.877Z",
+  "updated": "2020-03-31T02:15:41.912Z",
+  "slug": "christian-conventions-of-wa-inc",
+  "_type": "realm"
+  }
+  ],
+  "roles": [
+  {
+  "_id": "57f4640c461bb7401a858f77",
+  "title": "Full Access",
+  "_type": "role",
+  "realms": [
+  "54ebd2ef3a6e88a31bb68640"
+  ],
+  "status": "active",
+  "updated": "2021-02-24T06:19:11.856Z",
+  "created": "2016-10-05T02:23:08.750Z",
+  "firstLine": "Grants access to Create, Edit, View and Delete almost every type of content in the system"
+  }
+  ]
+  }
+  ],
+  "title": "Email Invoice",
+  "tests": [
+  {
+  "_id": "61f02aa9bb22cf00141a8295",
+  "title": "CREDO 2022 Registration",
+  "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"credo2022\",\n    \"submittedData\": {\n      \"title\": \"CREDO 2022\",\n      \"data\": {\n        \"contact\": [\n          \"5e97e0806a9f734dcdc940f1\"\n        ],\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"invoicenumber\": \"Rae-1991\",\n        \"donationAmount\": 100,\n        \"iamover18\": true,\n        \"discountcode\": \"lunchonly2022\"\n      },\n      \"realms\": [\n        \"5e82a7ce281d6602b698b488\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"details\": {\n              \"churchDetails\": {\n                \"data\": {\n                  \"attendsChurch\": \"yes\",\n                  \"churchAttending\": {\n                    \"_id\": \"5e9d1bf49b953262c33e1865\",\n                    \"status\": \"active\",\n                    \"realms\": [\n                      \"5e9d1bf79b953262c33e187f\",\n                      \"5e82a7cd281d6602b698b483\"\n                    ],\n                    \"title\": \"St Alban's Anglican Church, Highgate\",\n                    \"_type\": \"team\",\n                    \"created\": \"2020-04-20T03:50:12.925Z\",\n                    \"updated\": \"2021-10-29T02:02:08.558Z\",\n                    \"slug\": \"st-albans-anglican-church-sx8slca5xw\",\n                    \"definition\": \"church\",\n                    \"value\": \"5e9d1bf49b953262c33e1865\"\n                  }\n                }\n              }\n            },\n            \"dietaryRequirements\": [],\n            \"firstName\": \"Sam\",\n            \"lastName\": \"Rae\",\n            \"gender\": \"male\",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"email\": \"samrae@gmail.com\",\n            \"phoneNumber\": \"0439769319\",\n            \"registrationtype\": \"standard\",\n            \"mealPreference\": \"Beef Chilli Con Carne\",\n            \"elective\": \"Banksy, Spacey Jane, Fremantle, and Christians\",\n            \"elective2\": \"Fun and Faithful Youth Ministry\",\n            \"iwouldliketobecontactedabouthelpingoutatCredo2022\": false\n          }\n        ],\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"invoicenumber\": \"Rae-1991\",\n        \"donationAmount\": 100,\n        \"iamover18\": true,\n        \"discountcode\": \"lunchonly2022\"\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5fbb64696ee9aa64b821d238\",\n      \"payment\": {\n        \"amount\": 1050,\n        \"integration\": \"61f00157bb22cf00141a8170\",\n        \"details\": {\n          \"nonce\": \"cnon:CBESEK7YiULNCz-oB0DChh91zZU\",\n          \"cardData\": {\n            \"digital_wallet_type\": \"NONE\",\n            \"card_brand\": \"VISA\",\n            \"last_4\": \"2617\",\n            \"exp_month\": 1,\n            \"exp_year\": 2026\n          },\n          \"idempotencyKey\": \"17e91b04-e4d5-4000-8274-32c11a0eb000\"\n        }\n      },\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Saturday Only Registration\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        },\n        {\n          \"title\": \"Standard registrations\",\n          \"operation\": \"add\",\n          \"value\": 8000,\n          \"total\": 8000\n        },\n        {\n          \"title\": \"EarlyBird\",\n          \"operation\": \"subtract\",\n          \"value\": 500,\n          \"total\": 7500\n        },\n        {\n          \"title\": \"Lunch Only\",\n          \"operation\": \"set\",\n          \"value\": 1050,\n          \"total\": 1050\n        }\n      ],\n      \"currency\": \"aud\",\n      \"amount\": 1050,\n      \"transactions\": [\n        \"61f00c61d68a5100142560ec\"\n      ],\n      \"transaction\": \"61f00c61d68a5100142560ec\",\n      \"primaryEmail\": \"samrae@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"5e97e0806a9f734dcdc940f1\"\n      ],\n      \"agreements\": {\n        \"iamover18\": \"1. Age Restriction: To attend this event, you must be 18 years or older.\\n2. Sponsor Scheme: A contribution to this scheme helps to cover the cost of registration to our conferences for those otherwise unable to attend. If you wish to apply for a subsidy, please contact the registrar at credoperth@gmail.com. \\n3. Refund Policy: No refund is available for delegates who cancel after the registration closing date.\\n4. The earlybird discount is only available until 11:59pm 14th March 2022.\\n5. Walk-ins on Friday and Saturday night will be available at $10pp subject to availability.\\n6. Please be aware that government regulations are fluid and we will inform you if any restrictions affect CREDO 2022\"\n      },\n      \"attemptLog\": \"61f00c5fd68a5100142560ea\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"credo2022\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f00c64d68a510014256100\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7ce281d6602b698b488\"\n    ],\n    \"title\": \"CREDO 2022\",\n    \"_type\": \"interaction\",\n    \"definition\": \"credo2022\"\n  }\n}",
+  "testEmail": "sam@stalbans.org.au"
+  },
+  {
+  "_id": "61f52662cea4ea0013ddefe8",
+  "title": "Test live Square payment (2 contacts)",
+  "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\",\n    \"submittedData\": {\n      \"title\": \"Test live Square payment\",\n      \"data\": {\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"contact\": [\n          \"619ca4884de7ec000f03a8af\",\n          \"5e97e0806a9f734dcdc940f1\"\n        ],\n        \"userAmount\": 100\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b483\"\n      ],\n      \"rawData\": {\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"contact\": [\n          {\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"email\": \"samrae+test@gmail.com\"\n          },\n          {\n            \"firstName\": \"Sam\",\n            \"lastName\": \"Rae\",\n            \"email\": \"samrae@gmail.com\"\n          }\n        ],\n        \"userAmount\": 100\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"payment\": {\n        \"amount\": 100,\n        \"integration\": \"61f00157bb22cf00141a8170\",\n        \"details\": {\n          \"nonce\": \"cnon:CBASEHB1kPSjukrJMvilpMbs05I\",\n          \"cardData\": {\n            \"digital_wallet_type\": \"NONE\",\n            \"card_brand\": \"VISA\",\n            \"last_4\": \"2617\",\n            \"exp_month\": 1,\n            \"exp_year\": 2026\n          },\n          \"idempotencyKey\": \"17ea5078-7857-4000-8e47-16f98b793800\"\n        }\n      },\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"currency\": \"aud\",\n      \"amount\": 100,\n      \"transactions\": [\n        \"61f4ffe57fb07d0011e138dc\"\n      ],\n      \"transaction\": \"61f4ffe57fb07d0011e138dc\",\n      \"primaryEmail\": \"samrae+test@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"619ca4884de7ec000f03a8af\",\n        \"5e97e0806a9f734dcdc940f1\"\n      ],\n      \"attemptLog\": \"61f4ffe27fb07d0011e138da\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"testLiveSquarePayment\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f4ffe57fb07d0011e138ed\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"Test live Square payment\",\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\"\n  }\n}",
+  "testEmail": "samrae@gmail.com"
+  },
+  {
+  "_id": "61f52662cea4ea0013ddefe9",
+  "title": "Test live Square payment (Free/no payment)",
+  "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\",\n    \"submittedData\": {\n      \"title\": \"Test live Square payment\",\n      \"data\": {\n        \"contact\": [\n          \"5e97e0806a9f734dcdc940f1\"\n        ],\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"price\": \"0\"\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b483\"\n      ],\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"firstName\": \"Sam\",\n            \"lastName\": \"Rae\",\n            \"email\": \"samrae@gmail.com\"\n          }\n        ],\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"price\": \"0\"\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Set price\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        }\n      ],\n      \"primaryEmail\": \"samrae@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"5e97e0806a9f734dcdc940f1\"\n      ],\n      \"attemptLog\": \"61f50a6901380c01e1306825\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"testLiveSquarePayment\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f50a6a01380c01e130682c\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"Test live Square payment\",\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\"\n  }\n}",
+  "testEmail": "sam@stalbans.org.au"
+  },
+  {
+  "_id": "61f52662cea4ea0013ddefea",
+  "title": "Test live Square payment, no contacts",
+  "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePaymentNoContacts\",\n    \"submittedData\": {\n      \"title\": \"Test live Square payment, no contacts\",\n      \"data\": {\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"price\": \"100\"\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b483\"\n      ],\n      \"rawData\": {\n        \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n        \"price\": \"100\"\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"payment\": {\n        \"amount\": 100,\n        \"integration\": \"61f00157bb22cf00141a8170\",\n        \"details\": {\n          \"nonce\": \"cnon:CBASELNgtY9_CHlXH3VWHrTSXLA\",\n          \"cardData\": {\n            \"digital_wallet_type\": \"NONE\",\n            \"card_brand\": \"VISA\",\n            \"last_4\": \"2617\",\n            \"exp_month\": 1,\n            \"exp_year\": 2026\n          },\n          \"idempotencyKey\": \"17ea5547-c621-4000-8ef4-6267e79ed000\"\n        }\n      },\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Set price\",\n          \"operation\": \"add\",\n          \"value\": 100,\n          \"total\": 100\n        }\n      ],\n      \"currency\": \"aud\",\n      \"amount\": 100,\n      \"transactions\": [\n        \"61f513986e9216109c84a29c\"\n      ],\n      \"transaction\": \"61f513986e9216109c84a29c\",\n      \"contact\": null,\n      \"attemptLog\": \"61f513966e9216109c84a29a\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"testLiveSquarePaymentNoContacts\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f513996e9216109c84a2a0\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"Test live Square payment, no contacts\",\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePaymentNoContacts\"\n  }\n}",
+  "testEmail": "sam@stalbans.org.au"
+  },
+  {
+  "_id": "61f52662cea4ea0013ddefeb",
+  "title": "Manual Spark on Test Square Interaction",
+  "json": "{\n    \"trigger\": \"manual.spark\",\n    \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"testLiveSquarePayment\"\n    },\n    \"item\": {\n        \"title\": \"Test live Square payment\",\n        \"_type\": \"interaction\",\n        \"definition\": \"testLiveSquarePayment\",\n        \"_id\": \"61f4f85f4d66c70018d72980\"\n    }\n}",
+  "testEmail": "sam@stalbans.org.au"
+  },
+  {
+  "_id": "61f550195b9b1d0011e9025f",
+  "title": "Random input",
+  "json": "{\n  \"trigger\": \"reaction.error\",\n  \"data\": {\n    \"error\": {\n      \"type\": \"Error\",\n      \"data\": {\n        \"errorType\": \"SyntaxError\",\n        \"errorMessage\": \"Unexpected token '{'\",\n        \"trace\": [\n          \"./index.js:25\",\n          \"} else if {\",\n          \"          ^\",\n          \"\",\n          \"SyntaxError: Unexpected token '{'\",\n          \"    at new Script (vm.js:102:7)\",\n          \"    at NodeVM.run (/var/task/node_modules/vm2/lib/main.js:1153:13)\",\n          \"    at Runtime.exports.handler (/var/task/index.js:116:33)\",\n          \"    at Runtime.handleOnce (/var/runtime/Runtime.js:66:25)\"\n        ]\n      }\n    },\n    \"actionIndex\": 0,\n    \"trigger\": {\n      \"trigger\": \"content.create\",\n      \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"testLiveSquarePayment\",\n        \"submittedData\": {\n          \"title\": \"Test live Square payment\",\n          \"data\": {\n            \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n            \"contact\": [\n              \"619ca4884de7ec000f03a8af\",\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"userAmount\": 100\n          },\n          \"realms\": [\n            \"5e82a7cd281d6602b698b483\"\n          ],\n          \"rawData\": {\n            \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n            \"contact\": [\n              {\n                \"firstName\": \"Test\",\n                \"lastName\": \"Person\",\n                \"email\": \"samrae+test@gmail.com\"\n              },\n              {\n                \"firstName\": \"Sam\",\n                \"lastName\": \"Rae\",\n                \"email\": \"samrae@gmail.com\"\n              }\n            ],\n            \"userAmount\": 100\n          },\n          \"connectionData\": {\n            \"ip\": {\n              \"clientIp\": \"159.196.133.245\",\n              \"clientIpRoutable\": true\n            }\n          },\n          \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n          \"payment\": {\n            \"amount\": 100,\n            \"integration\": \"61f00157bb22cf00141a8170\",\n            \"details\": {\n              \"nonce\": \"cnon:CBASEHB1kPSjukrJMvilpMbs05I\",\n              \"cardData\": {\n                \"digital_wallet_type\": \"NONE\",\n                \"card_brand\": \"VISA\",\n                \"last_4\": \"2617\",\n                \"exp_month\": 1,\n                \"exp_year\": 2026\n              },\n              \"idempotencyKey\": \"17ea5078-7857-4000-8e47-16f98b793800\"\n            }\n          },\n          \"account\": \"5e82a7cd281d6602b698b481\",\n          \"currency\": \"aud\",\n          \"amount\": 100,\n          \"transactions\": [\n            \"61f4ffe57fb07d0011e138dc\"\n          ],\n          \"transaction\": \"61f4ffe57fb07d0011e138dc\",\n          \"primaryEmail\": \"samrae+test@gmail.com\",\n          \"contact\": null,\n          \"contacts\": [\n            \"619ca4884de7ec000f03a8af\",\n            \"5e97e0806a9f734dcdc940f1\"\n          ],\n          \"attemptLog\": \"61f4ffe27fb07d0011e138da\",\n          \"mentions\": [],\n          \"hashtags\": [],\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\"\n        }\n      },\n      \"item\": {\n        \"_id\": \"61f4ffe57fb07d0011e138ed\",\n        \"owners\": [],\n        \"managedOwners\": [],\n        \"realms\": [\n          \"5e82a7cd281d6602b698b483\"\n        ],\n        \"title\": \"Test live Square payment\",\n        \"_type\": \"interaction\",\n        \"definition\": \"testLiveSquarePayment\"\n      },\n      \"testEmail\": \"sam@stalbans.org.au\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f020701884c7000eaf5bad\",\n    \"owners\": [\n      \"5eb14f76f4e2c15ffb9bf805\"\n    ],\n    \"managedOwners\": [\n      \"5eb14f10ff872a540dbbbe16\"\n    ],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b483\"\n    ],\n    \"title\": \"Send Link to Square Invoice\",\n    \"author\": \"5eb14f76f4e2c15ffb9bf805\",\n    \"managedAuthor\": \"5eb14f10ff872a540dbbbe16\",\n    \"_type\": \"reaction\"\n  }\n}",
+  "testEmail": "sam@stalbans.org.au"
+  },
+  {
+  "_id": "61f550195b9b1d0011e90260",
+  "title": "Test  (Send Link to Square Invoice)",
+  "json": "{\n  \"trigger\": \"reaction.error\",\n  \"data\": {\n    \"logs\": [\n      {\n        \"account\": \"5e82a7cd281d6602b698b481\",\n        \"user\": {\n          \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n          \"accountType\": \"application\"\n        },\n        \"item\": \"61f547d06ec5710241cc566b\",\n        \"data\": {\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\",\n          \"submittedData\": {\n            \"title\": \"Test live Square integration\",\n            \"data\": {\n              \"contact\": [\n                \"5e97e0806a9f734dcdc940f1\"\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"realms\": [\n              \"61f546264d66c70018d73006\"\n            ],\n            \"rawData\": {\n              \"contact\": [\n                {\n                  \"firstName\": \"Sam\",\n                  \"lastName\": \"Rae\",\n                  \"email\": \"samrae@gmail.com\"\n                }\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"connectionData\": {\n              \"ip\": {\n                \"clientIp\": \"159.196.133.245\",\n                \"clientIpRoutable\": true\n              }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"payment\": {\n              \"amount\": 100,\n              \"integration\": \"61f00157bb22cf00141a8170\",\n              \"details\": {\n                \"nonce\": \"cnon:CBASEL-hatDvQOIZzVGPqTTPM-M\",\n                \"cardData\": {\n                  \"digital_wallet_type\": \"NONE\",\n                  \"card_brand\": \"VISA\",\n                  \"last_4\": \"2617\",\n                  \"exp_month\": 1,\n                  \"exp_year\": 2026\n                },\n                \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n              }\n            },\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"paymentModifiers\": [\n              {\n                \"title\": \"Set price\",\n                \"operation\": \"add\",\n                \"value\": 100,\n                \"total\": 100\n              }\n            ],\n            \"currency\": \"aud\",\n            \"amount\": 100,\n            \"transactions\": [\n              \"61f547d06ec5710241cc565e\"\n            ],\n            \"transaction\": \"61f547d06ec5710241cc565e\",\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"attemptLog\": \"61f547cd6ec5710241cc565c\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testLiveSquarePayment\"\n          }\n        },\n        \"key\": \"content.create\",\n        \"trigger\": \"content.create\",\n        \"message\": \"Created Test live Square integration\",\n        \"model\": \"interaction\"\n      },\n      {\n        \"account\": \"5e82a7cd281d6602b698b481\",\n        \"user\": {\n          \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n          \"accountType\": \"application\"\n        },\n        \"item\": \"61f547d06ec5710241cc566b\",\n        \"data\": {\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\",\n          \"submittedData\": {\n            \"title\": \"Test live Square integration\",\n            \"data\": {\n              \"contact\": [\n                \"5e97e0806a9f734dcdc940f1\"\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"realms\": [\n              \"61f546264d66c70018d73006\"\n            ],\n            \"rawData\": {\n              \"contact\": [\n                {\n                  \"firstName\": \"Sam\",\n                  \"lastName\": \"Rae\",\n                  \"email\": \"samrae@gmail.com\"\n                }\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"connectionData\": {\n              \"ip\": {\n                \"clientIp\": \"159.196.133.245\",\n                \"clientIpRoutable\": true\n              }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"payment\": {\n              \"amount\": 100,\n              \"integration\": \"61f00157bb22cf00141a8170\",\n              \"details\": {\n                \"nonce\": \"cnon:CBASEL-hatDvQOIZzVGPqTTPM-M\",\n                \"cardData\": {\n                  \"digital_wallet_type\": \"NONE\",\n                  \"card_brand\": \"VISA\",\n                  \"last_4\": \"2617\",\n                  \"exp_month\": 1,\n                  \"exp_year\": 2026\n                },\n                \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n              }\n            },\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"paymentModifiers\": [\n              {\n                \"title\": \"Set price\",\n                \"operation\": \"add\",\n                \"value\": 100,\n                \"total\": 100\n              }\n            ],\n            \"currency\": \"aud\",\n            \"amount\": 100,\n            \"transactions\": [\n              \"61f547d06ec5710241cc565e\"\n            ],\n            \"transaction\": \"61f547d06ec5710241cc565e\",\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"attemptLog\": \"61f547cd6ec5710241cc565c\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testLiveSquarePayment\"\n          }\n        },\n        \"key\": \"content.create\",\n        \"trigger\": \"content.create\",\n        \"message\": \"Created Test live Square integration\",\n        \"model\": \"interaction\",\n        \"inputType\": \"autoInteraction\"\n      },\n      {\n        \"account\": \"5e82a7cd281d6602b698b481\",\n        \"user\": {\n          \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n          \"accountType\": \"application\"\n        },\n        \"item\": \"61f547d06ec5710241cc566b\",\n        \"data\": {\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\",\n          \"submittedData\": {\n            \"title\": \"Test live Square integration\",\n            \"data\": {\n              \"contact\": [\n                \"5e97e0806a9f734dcdc940f1\"\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"realms\": [\n              \"61f546264d66c70018d73006\"\n            ],\n            \"rawData\": {\n              \"contact\": [\n                {\n                  \"firstName\": \"Sam\",\n                  \"lastName\": \"Rae\",\n                  \"email\": \"samrae@gmail.com\"\n                }\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"connectionData\": {\n              \"ip\": {\n                \"clientIp\": \"159.196.133.245\",\n                \"clientIpRoutable\": true\n              }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"payment\": {\n              \"amount\": 100,\n              \"integration\": \"61f00157bb22cf00141a8170\",\n              \"details\": {\n                \"nonce\": \"cnon:CBASEL-hatDvQOIZzVGPqTTPM-M\",\n                \"cardData\": {\n                  \"digital_wallet_type\": \"NONE\",\n                  \"card_brand\": \"VISA\",\n                  \"last_4\": \"2617\",\n                  \"exp_month\": 1,\n                  \"exp_year\": 2026\n                },\n                \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n              }\n            },\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"paymentModifiers\": [\n              {\n                \"title\": \"Set price\",\n                \"operation\": \"add\",\n                \"value\": 100,\n                \"total\": 100\n              }\n            ],\n            \"currency\": \"aud\",\n            \"amount\": 100,\n            \"transactions\": [\n              \"61f547d06ec5710241cc565e\"\n            ],\n            \"transaction\": \"61f547d06ec5710241cc565e\",\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"attemptLog\": \"61f547cd6ec5710241cc565c\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testLiveSquarePayment\"\n          }\n        },\n        \"key\": \"content.create\",\n        \"trigger\": \"content.create\",\n        \"message\": \"Created Test live Square integration\",\n        \"model\": \"interaction\",\n        \"inputType\": \"autoInteraction\"\n      },\n      {\n        \"account\": \"5e82a7cd281d6602b698b481\",\n        \"user\": {\n          \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n          \"accountType\": \"application\"\n        },\n        \"item\": \"61f547d06ec5710241cc566b\",\n        \"data\": {\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\",\n          \"submittedData\": {\n            \"title\": \"Test live Square integration\",\n            \"data\": {\n              \"contact\": [\n                \"5e97e0806a9f734dcdc940f1\"\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"realms\": [\n              \"61f546264d66c70018d73006\"\n            ],\n            \"rawData\": {\n              \"contact\": [\n                {\n                  \"firstName\": \"Sam\",\n                  \"lastName\": \"Rae\",\n                  \"email\": \"samrae@gmail.com\"\n                }\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"connectionData\": {\n              \"ip\": {\n                \"clientIp\": \"159.196.133.245\",\n                \"clientIpRoutable\": true\n              }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"payment\": {\n              \"amount\": 100,\n              \"integration\": \"61f00157bb22cf00141a8170\",\n              \"details\": {\n                \"nonce\": \"cnon:CBASEL-hatDvQOIZzVGPqTTPM-M\",\n                \"cardData\": {\n                  \"digital_wallet_type\": \"NONE\",\n                  \"card_brand\": \"VISA\",\n                  \"last_4\": \"2617\",\n                  \"exp_month\": 1,\n                  \"exp_year\": 2026\n                },\n                \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n              }\n            },\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"paymentModifiers\": [\n              {\n                \"title\": \"Set price\",\n                \"operation\": \"add\",\n                \"value\": 100,\n                \"total\": 100\n              }\n            ],\n            \"currency\": \"aud\",\n            \"amount\": 100,\n            \"transactions\": [\n              \"61f547d06ec5710241cc565e\"\n            ],\n            \"transaction\": \"61f547d06ec5710241cc565e\",\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"attemptLog\": \"61f547cd6ec5710241cc565c\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testLiveSquarePayment\"\n          }\n        },\n        \"key\": \"content.create\",\n        \"trigger\": \"content.create\",\n        \"message\": \"Created Test live Square integration\",\n        \"model\": \"interaction\",\n        \"inputType\": \"autoInteraction\"\n      },\n      {\n        \"account\": \"5e82a7cd281d6602b698b481\",\n        \"user\": {\n          \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n          \"accountType\": \"application\"\n        },\n        \"item\": \"61f547d06ec5710241cc566b\",\n        \"data\": {\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\",\n          \"submittedData\": {\n            \"title\": \"Test live Square integration\",\n            \"data\": {\n              \"contact\": [\n                \"5e97e0806a9f734dcdc940f1\"\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"realms\": [\n              \"61f546264d66c70018d73006\"\n            ],\n            \"rawData\": {\n              \"contact\": [\n                {\n                  \"firstName\": \"Sam\",\n                  \"lastName\": \"Rae\",\n                  \"email\": \"samrae@gmail.com\"\n                }\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"connectionData\": {\n              \"ip\": {\n                \"clientIp\": \"159.196.133.245\",\n                \"clientIpRoutable\": true\n              }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"payment\": {\n              \"amount\": 100,\n              \"integration\": \"61f00157bb22cf00141a8170\",\n              \"details\": {\n                \"nonce\": \"cnon:CBASEL-hatDvQOIZzVGPqTTPM-M\",\n                \"cardData\": {\n                  \"digital_wallet_type\": \"NONE\",\n                  \"card_brand\": \"VISA\",\n                  \"last_4\": \"2617\",\n                  \"exp_month\": 1,\n                  \"exp_year\": 2026\n                },\n                \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n              }\n            },\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"paymentModifiers\": [\n              {\n                \"title\": \"Set price\",\n                \"operation\": \"add\",\n                \"value\": 100,\n                \"total\": 100\n              }\n            ],\n            \"currency\": \"aud\",\n            \"amount\": 100,\n            \"transactions\": [\n              \"61f547d06ec5710241cc565e\"\n            ],\n            \"transaction\": \"61f547d06ec5710241cc565e\",\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"attemptLog\": \"61f547cd6ec5710241cc565c\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testLiveSquarePayment\"\n          }\n        },\n        \"key\": \"content.create\",\n        \"trigger\": \"content.create\",\n        \"message\": \"Created Test live Square integration\",\n        \"model\": \"interaction\",\n        \"inputType\": \"autoInteraction\"\n      },\n      {\n        \"account\": \"5e82a7cd281d6602b698b481\",\n        \"user\": {\n          \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n          \"accountType\": \"application\"\n        },\n        \"item\": \"61f547d06ec5710241cc566b\",\n        \"data\": {\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\",\n          \"submittedData\": {\n            \"title\": \"Test live Square integration\",\n            \"data\": {\n              \"contact\": [\n                \"5e97e0806a9f734dcdc940f1\"\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"realms\": [\n              \"61f546264d66c70018d73006\"\n            ],\n            \"rawData\": {\n              \"contact\": [\n                {\n                  \"firstName\": \"Sam\",\n                  \"lastName\": \"Rae\",\n                  \"email\": \"samrae@gmail.com\"\n                }\n              ],\n              \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n              \"price\": \"100\"\n            },\n            \"connectionData\": {\n              \"ip\": {\n                \"clientIp\": \"159.196.133.245\",\n                \"clientIpRoutable\": true\n              }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"payment\": {\n              \"amount\": 100,\n              \"integration\": \"61f00157bb22cf00141a8170\",\n              \"details\": {\n                \"nonce\": \"cnon:CBASEL-hatDvQOIZzVGPqTTPM-M\",\n                \"cardData\": {\n                  \"digital_wallet_type\": \"NONE\",\n                  \"card_brand\": \"VISA\",\n                  \"last_4\": \"2617\",\n                  \"exp_month\": 1,\n                  \"exp_year\": 2026\n                },\n                \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n              }\n            },\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"paymentModifiers\": [\n              {\n                \"title\": \"Set price\",\n                \"operation\": \"add\",\n                \"value\": 100,\n                \"total\": 100\n              }\n            ],\n            \"currency\": \"aud\",\n            \"amount\": 100,\n            \"transactions\": [\n              \"61f547d06ec5710241cc565e\"\n            ],\n            \"transaction\": {\n              \"_id\": \"61f547d06ec5710241cc565e\",\n              \"_type\": \"transaction\",\n              \"tags\": [],\n              \"realms\": [\n                \"619376c2ac6eda000f1d32cb\"\n              ],\n              \"owners\": [],\n              \"managedOwners\": [],\n              \"status\": \"active\",\n              \"hashtags\": [],\n              \"_references\": [],\n              \"mentions\": [],\n              \"keywords\": [],\n              \"privacy\": \"secure\",\n              \"title\": \"Test live Square integration payment\",\n              \"integration\": \"61f00157bb22cf00141a8170\",\n              \"transactionData\": {\n                \"payment\": {\n                  \"id\": \"d0rkIMpDDsuAon8HHLCUezBBqFSZY\",\n                  \"createdAt\": \"2022-01-29T13:57:34.181Z\",\n                  \"updatedAt\": \"2022-01-29T13:57:36.038Z\",\n                  \"amountMoney\": {\n                    \"amount\": 100,\n                    \"currency\": \"AUD\"\n                  },\n                  \"totalMoney\": {\n                    \"amount\": 100,\n                    \"currency\": \"AUD\"\n                  },\n                  \"approvedMoney\": {\n                    \"amount\": 100,\n                    \"currency\": \"AUD\"\n                  },\n                  \"status\": \"COMPLETED\",\n                  \"delayDuration\": \"PT168H\",\n                  \"delayAction\": \"CANCEL\",\n                  \"delayedUntil\": \"2022-02-05T13:57:34.181Z\",\n                  \"sourceType\": \"CARD\",\n                  \"cardDetails\": {\n                    \"status\": \"CAPTURED\",\n                    \"card\": {\n                      \"cardBrand\": \"VISA\",\n                      \"last4\": \"2617\",\n                      \"expMonth\": 1,\n                      \"expYear\": 2026,\n                      \"fingerprint\": \"sq-1-cv-txN2pmlpEV0Yy60i51NbED6YyYWRy-ccdn5I42nRDCJ6qz2uDsxFPnmqOME2y0w\",\n                      \"cardType\": \"DEBIT\",\n                      \"prepaidType\": \"NOT_PREPAID\",\n                      \"bin\": \"415436\"\n                    },\n                    \"entryMethod\": \"KEYED\",\n                    \"cvvStatus\": \"CVV_NOT_CHECKED\",\n                    \"avsStatus\": \"AVS_NOT_CHECKED\",\n                    \"authResultCode\": \"848928\",\n                    \"statementDescription\": \"SQ *CHRISTIAN CONVENTI\",\n                    \"cardPaymentTimeline\": {\n                      \"authorizedAt\": \"2022-01-29T13:57:35.656Z\",\n                      \"capturedAt\": \"2022-01-29T13:57:36.038Z\"\n                    }\n                  },\n                  \"locationId\": \"LP9SXS4JN1Q5F\",\n                  \"orderId\": \"SwP8cOunFU2lQeg4FpIZCdwKx7MZY\",\n                  \"note\": \"  - Test live Square integration payment\",\n                  \"receiptNumber\": \"d0rk\",\n                  \"receiptUrl\": \"https://squareup.com/receipt/preview/d0rkIMpDDsuAon8HHLCUezBBqFSZY\",\n                  \"versionToken\": \"0xqfXIcAG68Bg3TF3RmoWi8QlfI4TpbIQz2KYV2h8ox6o\"\n                },\n                \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n              },\n              \"account\": \"5e82a7cd281d6602b698b481\",\n              \"author\": \"5eff0aa041a86b0cfbe961c5\",\n              \"module\": \"square\",\n              \"currency\": \"aud\",\n              \"amount\": 100,\n              \"transactionType\": \"payment\",\n              \"mode\": \"live\",\n              \"data\": {\n                \"attemptLog\": \"61f547cd6ec5710241cc565c\"\n              },\n              \"user\": \"5eff0aa041a86b0cfbe961c5\",\n              \"paymentStatus\": \"success\",\n              \"description\": \"Payment successful\",\n              \"lineItems\": [],\n              \"discounts\": [],\n              \"refundData\": [],\n              \"tax\": [],\n              \"created\": \"2022-01-29T13:57:36.205Z\",\n              \"updated\": \"2022-01-29T13:57:36.205Z\",\n              \"discountTotal\": 0,\n              \"total\": 100,\n              \"interaction\": \"61f547d06ec5710241cc566b\",\n              \"contact\": \"5e97e0806a9f734dcdc940f1\"\n            },\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"attemptLog\": \"61f547cd6ec5710241cc565c\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testLiveSquarePayment\"\n          }\n        },\n        \"key\": \"content.create\",\n        \"trigger\": \"content.create\",\n        \"message\": \"Created Test live Square integration\",\n        \"model\": \"interaction\",\n        \"inputType\": \"autoInteraction\"\n      },\n      {\n        \"errorType\": \"TypeError\",\n        \"errorMessage\": \"Cannot read property '0' of undefined\",\n        \"trace\": [\n          \"TypeError: Cannot read property '0' of undefined\",\n          \"    at module.exports (./index.js:34:34)\",\n          \"    at Object.base.apply (/var/task/node_modules/vm2/lib/contextify.js:228:34)\",\n          \"    at Runtime.exports.handler (/var/task/index.js:118:12)\",\n          \"    at Runtime.handleOnce (/var/runtime/Runtime.js:66:25)\"\n        ]\n      }\n    ],\n    \"error\": {\n      \"errorType\": \"TypeError\",\n      \"errorMessage\": \"Cannot read property '0' of undefined\",\n      \"trace\": [\n        \"TypeError: Cannot read property '0' of undefined\",\n        \"    at module.exports (./index.js:34:34)\",\n        \"    at Object.base.apply (/var/task/node_modules/vm2/lib/contextify.js:228:34)\",\n        \"    at Runtime.exports.handler (/var/task/index.js:118:12)\",\n        \"    at Runtime.handleOnce (/var/runtime/Runtime.js:66:25)\"\n      ]\n    },\n    \"trigger\": {\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"user\": {\n        \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n        \"accountType\": \"application\"\n      },\n      \"item\": \"61f547d06ec5710241cc566b\",\n      \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"testLiveSquarePayment\",\n        \"submittedData\": {\n          \"title\": \"Test live Square integration\",\n          \"data\": {\n            \"contact\": [\n              \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n            \"price\": \"100\"\n          },\n          \"realms\": [\n            \"61f546264d66c70018d73006\"\n          ],\n          \"rawData\": {\n            \"contact\": [\n              {\n                \"firstName\": \"Sam\",\n                \"lastName\": \"Rae\",\n                \"email\": \"samrae@gmail.com\"\n              }\n            ],\n            \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n            \"price\": \"100\"\n          },\n          \"connectionData\": {\n            \"ip\": {\n              \"clientIp\": \"159.196.133.245\",\n              \"clientIpRoutable\": true\n            }\n          },\n          \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n          \"payment\": {\n            \"amount\": 100,\n            \"integration\": \"61f00157bb22cf00141a8170\",\n            \"details\": {\n              \"nonce\": \"cnon:CBASEL-hatDvQOIZzVGPqTTPM-M\",\n              \"cardData\": {\n                \"digital_wallet_type\": \"NONE\",\n                \"card_brand\": \"VISA\",\n                \"last_4\": \"2617\",\n                \"exp_month\": 1,\n                \"exp_year\": 2026\n              },\n              \"idempotencyKey\": \"17ea6207-6c59-4000-8c61-a089e6792800\"\n            }\n          },\n          \"account\": \"5e82a7cd281d6602b698b481\",\n          \"paymentModifiers\": [\n            {\n              \"title\": \"Set price\",\n              \"operation\": \"add\",\n              \"value\": 100,\n              \"total\": 100\n            }\n          ],\n          \"currency\": \"aud\",\n          \"amount\": 100,\n          \"transactions\": [\n            \"61f547d06ec5710241cc565e\"\n          ],\n          \"transaction\": \"61f547d06ec5710241cc565e\",\n          \"primaryEmail\": \"samrae@gmail.com\",\n          \"contact\": null,\n          \"contacts\": [\n            \"5e97e0806a9f734dcdc940f1\"\n          ],\n          \"attemptLog\": \"61f547cd6ec5710241cc565c\",\n          \"mentions\": [],\n          \"hashtags\": [],\n          \"_type\": \"interaction\",\n          \"definition\": \"testLiveSquarePayment\"\n        }\n      },\n      \"key\": \"content.create\",\n      \"trigger\": \"content.create\",\n      \"message\": \"Created Test live Square integration\",\n      \"model\": \"interaction\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"61f020701884c7000eaf5bad\",\n    \"owners\": [\n      \"5eb14f76f4e2c15ffb9bf805\"\n    ],\n    \"managedOwners\": [\n      \"5eb14f10ff872a540dbbbe16\"\n    ],\n    \"realms\": [\n      \"619376c2ac6eda000f1d32cb\"\n    ],\n    \"title\": \"Send Link to Square Invoice\",\n    \"author\": \"5eb14f76f4e2c15ffb9bf805\",\n    \"managedAuthor\": \"5eb14f10ff872a540dbbbe16\",\n    \"_type\": \"reaction\"\n  }\n}",
+  "testEmail": "sam@stalbans.org.au"
+  },
+  {
+  "_id": "61f550195b9b1d0011e90261",
+  "title": "Actual Active Trigger input (Test form)",
+  "json": "{\n    \"account\": \"5e82a7cd281d6602b698b481\",\n    \"user\": {\n        \"_id\": \"5eff0aa041a86b0cfbe961c5\",\n        \"accountType\": \"application\"\n    },\n    \"item\": \"61f5492706c4000017c6953f\",\n    \"data\": {\n        \"_type\": \"interaction\",\n        \"definition\": \"testLiveSquarePayment\",\n        \"submittedData\": {\n            \"title\": \"Test live Square integration\",\n            \"data\": {\n                \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n                \"contact\": [\n                    \"5e97e0806a9f734dcdc940f1\"\n                ],\n                \"price\": \"100\"\n            },\n            \"realms\": [\n                \"61f546264d66c70018d73006\"\n            ],\n            \"rawData\": {\n                \"_paymentGateway\": \"61f00157bb22cf00141a8170\",\n                \"contact\": [\n                    {\n                        \"firstName\": \"Sam\",\n                        \"lastName\": \"Rae\",\n                        \"email\": \"samrae@gmail.com\"\n                    }\n                ],\n                \"price\": \"100\"\n            },\n            \"connectionData\": {\n                \"ip\": {\n                    \"clientIp\": \"159.196.133.245\",\n                    \"clientIpRoutable\": true\n                }\n            },\n            \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n            \"payment\": {\n                \"amount\": 100,\n                \"integration\": \"61f00157bb22cf00141a8170\",\n                \"details\": {\n                    \"nonce\": \"cnon:CBASEMzBZ4AVbus1tNOPLb2wGGU\",\n                    \"cardData\": {\n                        \"digital_wallet_type\": \"NONE\",\n                        \"card_brand\": \"VISA\",\n                        \"last_4\": \"2617\",\n                        \"exp_month\": 1,\n                        \"exp_year\": 2026\n                    },\n                    \"idempotencyKey\": \"17ea625b-47c1-4000-8a4e-b6ccc3031000\"\n                }\n            },\n            \"account\": \"5e82a7cd281d6602b698b481\",\n            \"paymentModifiers\": [\n                {\n                    \"title\": \"Set price\",\n                    \"operation\": \"add\",\n                    \"value\": 100,\n                    \"total\": 100\n                }\n            ],\n            \"currency\": \"aud\",\n            \"amount\": 100,\n            \"transactions\": [\n                \"61f5492706c4000017c69536\"\n            ],\n            \"transaction\": \"61f5492706c4000017c69536\",\n            \"primaryEmail\": \"samrae@gmail.com\",\n            \"contact\": null,\n            \"contacts\": [\n                \"5e97e0806a9f734dcdc940f1\"\n            ],\n            \"attemptLog\": \"61f5492506c4000017c69534\",\n            \"mentions\": [],\n            \"hashtags\": [],\n            \"_type\": \"interaction\",\n            \"definition\": \"testLiveSquarePayment\"\n        }\n    },\n    \"key\": \"content.create\",\n    \"trigger\": \"content.create\",\n    \"message\": \"Created Test live Square integration\",\n    \"model\": \"interaction\"\n}",
+  "testEmail": "sam@stalbans.org.au"
+  },
+  {
+  "_id": "635b4d099ff3020025ddbaeb",
+  "title": "PWC Donation form submission",
+  "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"pwcDonations\",\n    \"submittedData\": {\n      \"title\": \"PWC Donations\",\n      \"data\": {\n        \"contact\": \"5e97e0806a9f734dcdc940f1\",\n        \"_paymentGateway\": \"61f5557d7fb07d0011e14799\",\n        \"amount\": 100\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b485\"\n      ],\n      \"rawData\": {\n        \"contact\": {\n          \"firstName\": \"Sam\",\n          \"lastName\": \"Rae\",\n          \"email\": \"samrae@gmail.com\"\n        },\n        \"_paymentGateway\": \"61f5557d7fb07d0011e14799\",\n        \"amount\": 100\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"203.59.233.14\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"payment\": {\n        \"amount\": 100,\n        \"integration\": \"61f5557d7fb07d0011e14799\",\n        \"details\": {\n          \"nonce\": \"cnon:CBASEOrxf8NzDtov4f-LjmjLl0c\",\n          \"cardData\": {\n            \"digital_wallet_type\": \"NONE\",\n            \"card_brand\": \"VISA\",\n            \"last_4\": \"2617\",\n            \"exp_month\": 1,\n            \"exp_year\": 2026\n          },\n          \"idempotencyKey\": \"1841c8bb-07d5-4000-892c-ec38effa3000\"\n        }\n      },\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Amount entered by user\",\n          \"operation\": \"set\",\n          \"value\": 100,\n          \"total\": 100\n        }\n      ],\n      \"currency\": \"aud\",\n      \"amount\": 100,\n      \"transactions\": [\n        \"635b4696b5d6120025804c57\"\n      ],\n      \"transaction\": \"635b4696b5d6120025804c57\",\n      \"primaryEmail\": \"samrae@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"5e97e0806a9f734dcdc940f1\"\n      ],\n      \"attemptLog\": \"635b4694b5d6120025804c55\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"pwcDonations\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"635b4696b5d6120025804c5d\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b485\"\n    ],\n    \"title\": \"PWC Donations\",\n    \"_type\": \"interaction\",\n    \"definition\": \"pwcDonations\"\n  }\n}",
+  "testEmail": "samrae@gmail.com"
+  },
+  {
+  "_id": "639eecb997e0e8002520271d",
+  "title": "Test Live Stripe payment",
+  "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\",\n    \"submittedData\": {\n      \"title\": \"Test live Payment\",\n      \"data\": {\n        \"contact\": \"5e97e0806a9f734dcdc940f1\",\n        \"_paymentGateway\": \"638311a5b304c1002553dd2b\",\n        \"cost\": \"100\"\n      },\n      \"realms\": [\n        \"61f546264d66c70018d73006\"\n      ],\n      \"rawData\": {\n        \"contact\": {\n          \"firstName\": \"Sam\",\n          \"lastName\": \"Rae\",\n          \"email\": \"samrae@gmail.com\"\n        },\n        \"_paymentGateway\": \"638311a5b304c1002553dd2b\",\n        \"cost\": \"100\"\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.133.245\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"payment\": {\n        \"amount\": 100,\n        \"integration\": \"638311a5b304c1002553dd2b\",\n        \"details\": {\n          \"id\": \"tok_1MGKBsE3q7vRrP1RD3COVT5t\",\n          \"object\": \"token\",\n          \"card\": {\n            \"id\": \"card_1MGKBsE3q7vRrP1R991IV5cc\",\n            \"object\": \"card\",\n            \"address_city\": null,\n            \"address_country\": null,\n            \"address_line1\": null,\n            \"address_line1_check\": null,\n            \"address_line2\": null,\n            \"address_state\": null,\n            \"address_zip\": null,\n            \"address_zip_check\": null,\n            \"brand\": \"Visa\",\n            \"country\": \"AU\",\n            \"cvc_check\": \"unchecked\",\n            \"dynamic_last4\": null,\n            \"exp_month\": 11,\n            \"exp_year\": 2027,\n            \"funding\": \"debit\",\n            \"last4\": \"4155\",\n            \"name\": \"Samuel Rae\",\n            \"tokenization_method\": null\n          },\n          \"client_ip\": \"159.196.133.245\",\n          \"created\": 1671359636,\n          \"livemode\": true,\n          \"type\": \"card\",\n          \"used\": false\n        }\n      },\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Registration\",\n          \"operation\": \"add\",\n          \"value\": 100,\n          \"total\": 100\n        }\n      ],\n      \"currency\": \"aud\",\n      \"amount\": 100,\n      \"transactions\": [\n        \"639eec9662cb5400256cd9cf\"\n      ],\n      \"transaction\": \"639eec9662cb5400256cd9cf\",\n      \"primaryEmail\": \"samrae@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"5e97e0806a9f734dcdc940f1\"\n      ],\n      \"attemptLog\": \"639eec9562cb5400256cd9cd\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"testLiveSquarePayment\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"639eec9662cb5400256cd9d5\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"61f546264d66c70018d73006\"\n    ],\n    \"title\": \"Test live Payment\",\n    \"_type\": \"interaction\",\n    \"definition\": \"testLiveSquarePayment\"\n  }\n}",
+  "testEmail": "samrae@gmail.com"
+  }
+  ],
+  "_type": "reaction",
+  "deactivated": false,
+  "account": {
+  "_id": "5e82a7cd281d6602b698b481",
+  "status": "active",
+  "title": "CCOWA",
+  "countryCode": "AU",
+  "timezone": "Australia/Perth"
+  },
+  "author": {
+  "_id": "5d244cfc34837054a394b13b",
+  "firstName": "Sam",
+  "lastName": "Rae",
+  "name": "Sam Rae",
+  "_type": "user"
+  },
+  "managedAuthor": {
+  "_id": "62998c42ddad6a00179501f8",
+  "_type": "persona",
+  "firstName": "Sam",
+  "title": "Sam Rae",
+  "lastName": "Rae"
+  },
+  "updatedBy": "Sam Rae",
+  "created": "2022-12-20T09:14:09.545Z",
+  "updated": "2022-12-20T12:49:40.230Z",
+  "apikey": "$2a$10$IAkGXFUncGcae/kYTdT9JOT70hM1f.cAZ/7ZIMJvkjas4zWWiYJNa",
+  "data": {},
+  "statDates": {}
+  }
