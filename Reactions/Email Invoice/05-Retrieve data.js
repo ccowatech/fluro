@@ -11,8 +11,20 @@ const { interaction, inputType } = input;
 const { paymentModifiers } = interaction;
 
 // Check that a Transaction and a Contact are attached to this Interaction.
-if (!has(interaction, 'transactions') || !has(interaction, 'contacts')) {
-    // If there are no transactions or no contacts, stop the Reaction
+// If no transactions, stop the reaction
+if (has(interaction, 'transactions')) {
+    if (interaction.transactions.length === 0) {
+        return done(null, 'STOP');
+    }
+} else {
+    return done(null, 'STOP');
+}
+// If no contacts, stop the reaction
+if (has(interaction, 'contacts')) {
+    if (interaction.contacts.length === 0) {
+        return done(null, 'STOP');
+    }
+} else {
     return done(null, 'STOP');
 }
 
