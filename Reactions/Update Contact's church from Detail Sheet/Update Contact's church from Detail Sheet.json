@@ -118,7 +118,7 @@
       "conditions": [],
       "type": "code",
       "_id": "63161cdce9778900266ee7b6",
-      "script": "/*\nRemove contacts from the contact array if they don't have detail sheets attached\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input data needed\nconst { inputType, definition, interactionID, contacts, contactsAndChurches } = input;\nconst contactsWithoutDetailSheets = [];\n\n// Copy contact IDs without detail sheets to new array\nfor (let i = 0; i < contacts.length; i += 1) {\n    if(!has(contactsAndChurches, contacts[i])) {\n        contactsWithoutDetailSheets.push(contacts[i]);\n    }\n}\n// Remove contact IDs without detail sheets from contact array\nfor (let i = 0; i < contactsWithoutDetailSheets.length; i += 1) {\n    contacts.pop(contactsWithoutDetailSheets[i]);  \n}\n\n// Replace input with only the data we need\ninput = {\n    inputType,\n    contacts,\n    contactsWithoutDetailSheets,\n    contactsAndChurches\n};\n\n// Finish the action and send the input to the next action\nreturn done(null, input);"
+      "script": "/*\nRemove contacts from the contact array if they don't have detail sheets attached\n*/\n\n// Load packages\nconst has = require('lodash/has');\n\n// Get input data needed\nconst { inputType, definition, interactionID, contacts, contactsAndChurches } = input;\nconst contactsWithoutDetailSheets = [];\n\n// Copy contact IDs without detail sheets to new array\nfor (let i = 0; i < contacts.length; i += 1) {\n    if(!has(contactsAndChurches, contacts[i])) {\n        contactsWithoutDetailSheets.push(contacts[i]);\n    }\n}\n// Remove contact IDs without detail sheets from contact array\nfor (let i = 0; i < contactsWithoutDetailSheets.length; i += 1) {\n    contacts.pop(contactsWithoutDetailSheets[i]);  \n}\n\n// Replace input with only the data we need\ninput = {\n    inputType,\n    definition,\n    interactionID,\n    contacts,\n    contactsWithoutDetailSheets,\n    contactsAndChurches\n};\n\n// Finish the action and send the input to the next action\nreturn done(null, input);"
     },
     {
       "conditions": [
@@ -198,41 +198,42 @@
               "606ecb8ec9c89661558d0bc1",
               "6215e2e8d7cc7c001956c492",
               "5e9d1bf79b953262c33e187f",
-              "61f546264d66c70018d73006"
+              "61f546264d66c70018d73006",
+              "6405ea7fa6acd80034248f5c"
             ],
             "tags": [],
             "_type": "contact",
             "data": {
               "futureContact": "N",
               "import": {
-                "Name for sorting": "Rae, Samuel",
-                "Surname": "Rae",
-                "First name": "Samuel",
-                "Nametag": "Sam Rae",
-                "Category": "0",
-                "Future contact": "N",
-                "Pending": "1",
-                "Share?": "n",
-                "Email": "samrae@gmail.com",
-                "Email status": "0",
-                "Wrong": "0",
-                "Year of birth": "0",
-                "Last update when": "16/07/15 17:55",
-                "Last update who": "Teamlist web user",
-                "Record #": "158980",
-                "Member of": "pmc2015",
                 "index": 9945,
-                "Sex": "M",
-                "Church denom name": "Baptist",
-                "Church name": "Atwell Community Church",
-                "Phone(m)": "043976319",
-                "Street": "10 Radiance Link",
-                "Suburb": "Atwell",
-                "State": "WA",
-                "Postcode": "6164",
-                "DOB": "19/05/1982",
-                "Info": "St Matthew's Uni Church",
-                "Prefname": "Sam"
+                "nameForSorting": "Rae, Samuel",
+                "surname": "Rae",
+                "firstName": "Samuel",
+                "nametag": "Sam Rae",
+                "category": "0",
+                "futureContact": "N",
+                "pending": "1",
+                "share": "n",
+                "email": "samrae@gmail.com",
+                "emailStatus": "0",
+                "wrong": "0",
+                "yearOfBirth": "0",
+                "lastUpdateWhen": "16/07/15 17:55",
+                "lastUpdateWho": "Teamlist web user",
+                "record": "158980",
+                "memberOf": "pmc2015",
+                "sex": "M",
+                "churchDenomName": "Baptist",
+                "churchName": "Atwell Community Church",
+                "phoneM": "043976319",
+                "street": "10 Radiance Link",
+                "suburb": "Atwell",
+                "state": "WA",
+                "postcode": "6164",
+                "dob": "19/05/1982",
+                "info": "St Matthew's Uni Church",
+                "prefname": "Sam"
               }
             },
             "account": "5e82a7cd281d6602b698b481",
@@ -253,7 +254,9 @@
               "5e82a7ce281d6602b698b489",
               "5e9d1c929b953262c33e24da",
               "5e82a7cd281d6602b698b484",
-              "608a565b6eb42c090022c3fd"
+              "608a565b6eb42c090022c3fd",
+              "6405ea7fa6acd80034248f5c",
+              "6405eaede0fd77003424f863"
             ],
             "tags": [],
             "_type": "contact",
@@ -409,7 +412,7 @@
   "_type": "reaction",
   "updatedBy": "Sam Rae",
   "created": "2022-01-31T11:06:23.988Z",
-  "updated": "2022-09-06T12:45:28.181Z",
+  "updated": "2023-06-13T07:20:51.255Z",
   "tests": [
     {
       "_id": "61f7c66d5b9b1d0011e97304",
@@ -487,6 +490,12 @@
       "_id": "6315f9c3a631a70026aa04ad",
       "title": "Form submission that didn’t work 2022-09-02",
       "json": "{\n    \"data\": {\n        \"_type\":\"interaction\"\n    },\n    \"item\": {\n        \"_id\": \"6311608047af380025d080f6\"\n    }\n}",
+      "testEmail": "samrae@gmail.com"
+    },
+    {
+      "_id": "648818d3db1d2d00344e309a",
+      "title": "Test  (Perth Men's Convention 2023)",
+      "json": "{\n  \"trigger\": \"content.create\",\n  \"data\": {\n    \"_type\": \"interaction\",\n    \"definition\": \"perthMensConvention2023\",\n    \"submittedData\": {\n      \"title\": \"Perth Men's Convention 2023\",\n      \"data\": {\n        \"contact\": [\n          \"619ca4884de7ec000f03a8af\",\n          \"64880ee5f201c60034f1e1d6\"\n        ],\n        \"_paymentGateway\": \"61f55567d14c8e0dadeae0e9\",\n        \"iwouldliketodonatetothePmcSponsorScheme\": false,\n        \"invoicenumber\": \"Pers-1875\",\n        \"iamover18\": true,\n        \"discountcode\": \"pmc23band\"\n      },\n      \"realms\": [\n        \"5e82a7cd281d6602b698b484\"\n      ],\n      \"event\": \"6400198fa7bd5e003441bac7\",\n      \"rawData\": {\n        \"contact\": [\n          {\n            \"gender\": \"male\",\n            \"family\": {\n              \"address\": {\n                \"addressLine1\": \"37A Third Ave \",\n                \"suburb\": \"Bassendean \",\n                \"state\": \"WA\",\n                \"postalCode\": \"6054\"\n              },\n              \"title\": \"Person\"\n            },\n            \"samePostal\": true,\n            \"churchDetails\": {\n              \"data\": {\n                \"attendsChurch\": \"yes\",\n                \"churchAttending\": {\n                  \"_id\": \"5e9d1bad9b953262c33e1294\",\n                  \"status\": \"active\",\n                  \"realms\": [\n                    \"5e9d1bae9b953262c33e1299\",\n                    \"5e82a7cd281d6602b698b483\"\n                  ],\n                  \"title\": \"Providence Midland\",\n                  \"_type\": \"team\",\n                  \"created\": \"2020-04-20T03:49:01.679Z\",\n                  \"updated\": \"2022-03-06T12:29:23.207Z\",\n                  \"slug\": \"providence-midland-hnu9hjyo2l\",\n                  \"definition\": \"church\",\n                  \"value\": \"5e9d1bad9b953262c33e1294\"\n                }\n              }\n            },\n            \"dietaryRequirements\": [],\n            \"firstName\": \"Test\",\n            \"lastName\": \"Person\",\n            \"email\": \"samrae+test@gmail.com\",\n            \"phoneNumber\": \"0439769319 \",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"registrationtype\": \"Standard\",\n            \"timezone\": \"Australia/Perth\"\n          },\n          {\n            \"gender\": \"male\",\n            \"family\": {\n              \"address\": {\n                \"addressLine1\": \"37A Third Ave \",\n                \"suburb\": \"Bassendean \",\n                \"state\": \"WA\",\n                \"postalCode\": \"6054\"\n              },\n              \"title\": \"Person\"\n            },\n            \"samePostal\": true,\n            \"churchDetails\": {\n              \"data\": {\n                \"attendsChurch\": \"yes\",\n                \"churchAttending\": {\n                  \"_id\": \"5e9d1bad9b953262c33e1294\",\n                  \"status\": \"active\",\n                  \"realms\": [\n                    \"5e9d1bae9b953262c33e1299\",\n                    \"5e82a7cd281d6602b698b483\"\n                  ],\n                  \"title\": \"Providence Midland\",\n                  \"_type\": \"team\",\n                  \"created\": \"2020-04-20T03:49:01.679Z\",\n                  \"updated\": \"2022-03-06T12:29:23.207Z\",\n                  \"slug\": \"providence-midland-hnu9hjyo2l\",\n                  \"definition\": \"church\",\n                  \"value\": \"5e9d1bad9b953262c33e1294\"\n                }\n              }\n            },\n            \"dietaryRequirements\": [],\n            \"firstName\": \"Test Son\",\n            \"lastName\": \"Person\",\n            \"email\": \"samrae+testson@gmail.com\",\n            \"phoneNumber\": \"0439769319\",\n            \"dob\": \"1982-05-19T00:00:00.000Z\",\n            \"registrationtype\": \"Sons\",\n            \"timezone\": \"Australia/Perth\"\n          }\n        ],\n        \"_paymentGateway\": \"61f55567d14c8e0dadeae0e9\",\n        \"iwouldliketodonatetothePmcSponsorScheme\": false,\n        \"invoicenumber\": \"Pers-1875\",\n        \"iamover18\": true,\n        \"discountcode\": \"pmc23band\"\n      },\n      \"connectionData\": {\n        \"ip\": {\n          \"clientIp\": \"159.196.132.87\",\n          \"clientIpRoutable\": true\n        }\n      },\n      \"applicationAuthor\": \"5eff0aa041a86b0cfbe961c5\",\n      \"account\": \"5e82a7cd281d6602b698b481\",\n      \"paymentModifiers\": [\n        {\n          \"title\": \"Accompanying Sons registrations\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        },\n        {\n          \"title\": \"Concession registrations\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        },\n        {\n          \"title\": \"Standard registrations\",\n          \"operation\": \"add\",\n          \"value\": 0,\n          \"total\": 0\n        },\n        {\n          \"title\": \"PMC Musicians\",\n          \"operation\": \"set\",\n          \"value\": 0,\n          \"total\": 0\n        }\n      ],\n      \"primaryEmail\": \"samrae+test@gmail.com\",\n      \"contact\": null,\n      \"contacts\": [\n        \"619ca4884de7ec000f03a8af\",\n        \"64880ee5f201c60034f1e1d6\"\n      ],\n      \"agreements\": {\n        \"iamover18\": \"1. You will receive communication from Perth Men’s Convention about future conventions. You can unsubscribe at any time. \\n\\n2. Age Restriction: To attend this event, you must be 18 years or older, however we do allow and encourage acompanying sons in Year 11 or 12 to attend accompanied by their Father or a responsible care giver. \\n\\n3. Registration & Refund policy: Refunds: Please note, there will be no refund for cancellation after 6th August 2023. If you have registered but are unable to attend on the day letting us know will help us know who is and isn’t expected on site.\\n\\n\\n4. Registrations: Full payment is required for registration. Registrations close 10pm Tuesday 10th August 2023, or when venue limit is reached. \\n\\n5. TICKETS: Tickets are not transferable without registrar consent. Please note that seating is limited and registrations will close when the venue limit is reached. To avoid disappointment early registration and payment is strongly recommended. Postal registrations need to allow time for postage and handling.\\n\\n6. Sponsor Scheme: A contribution to this scheme helps to cover the cost of registration to our conferences for those otherwise unable to attend. If you wish to apply for a subsidy, please contact the registrar at pmcreg@ccowa.org \\n\\n7. Refund Policy: No refund is available for delegates who cancel after the 6th August 2023.\\n\\n8. Walk-ins: Please Note we do not accept walkins. There will be no door registrations and payments on the day.\\n\\n9. ENQUIRIES: \\nFor Registration enquiries: Brad Vigus 0438 172 882 or pmcrego@ccowa.org\"\n      },\n      \"attemptLog\": \"64880ee0f201c60034f1e1c0\",\n      \"mentions\": [],\n      \"hashtags\": [],\n      \"_type\": \"interaction\",\n      \"definition\": \"perthMensConvention2023\"\n    }\n  },\n  \"item\": {\n    \"_id\": \"64880ee5f201c60034f1e1df\",\n    \"owners\": [],\n    \"managedOwners\": [],\n    \"realms\": [\n      \"5e82a7cd281d6602b698b484\"\n    ],\n    \"title\": \"Perth Men's Convention 2023\",\n    \"_type\": \"interaction\",\n    \"definition\": \"perthMensConvention2023\"\n  }\n}",
       "testEmail": "samrae@gmail.com"
     }
   ],
