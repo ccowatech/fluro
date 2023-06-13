@@ -23,6 +23,8 @@ for (let i = 0; i < contactsWithoutDetailSheets.length; i += 1) {
 // Replace input with only the data we need
 input = {
     inputType,
+    definition,
+    interactionID,
     contacts,
     contactsWithoutDetailSheets,
     contactsAndChurches
